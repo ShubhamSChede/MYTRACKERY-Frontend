@@ -7,6 +7,19 @@ import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import 'nativewind';
 
+const categories = [
+  { label: 'Food', value: 'Food' },
+  { label: 'Groceries', value: 'Groceries' },
+  { label: 'Travel', value: 'Travel' },
+  { label: 'Health', value: 'Health' },
+  { label: 'Leisure', value: 'Leisure' },
+  { label: 'Education', value: 'Education' },
+  { label: 'Gadgets', value: 'Gadgets' },
+  { label: 'Bills', value: 'Bills' },
+  { label: 'Shopping', value: 'Shopping' },
+  { label: 'Grooming', value: 'Grooming' },
+];
+
 const Expenses = () => {
   const router = useRouter();
   const [expenses, setExpenses] = useState([]);
@@ -71,6 +84,32 @@ const Expenses = () => {
     }
   };
 
+  const deleteExpense = async (id) => {
+    try {
+      const response = await fetch(
+        `https://expensetrackerbackend-j2tz.onrender.com/api/expenses/${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-auth-token': token,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete expense');
+      }
+
+      Alert.alert('Success', 'Expense deleted successfully');
+      setExpenses(expenses.filter((expense) => expense._id !== id));
+      setFilteredExpenses(filteredExpenses.filter((expense) => expense._id !== id));
+    } catch (error) {
+      console.error('Delete expense error:', error);
+      Alert.alert('Error', 'Failed to delete the expense. Please try again.');
+    }
+  };
+
   useEffect(() => {
     getToken();
   }, []);
@@ -123,6 +162,9 @@ const Expenses = () => {
           <Text className="text-sm text-gray-600">
             {new Date(item.date).toLocaleDateString()}
           </Text>
+          <TouchableOpacity onPress={() => deleteExpense(item._id)}>
+            <Text className="text-red-600 ml-4">🗑️</Text>
+          </TouchableOpacity>
         </View>
         {expandedExpenseId === item._id && (
           <Text className="text-gray-600 mt-2">Reason: {item.reason}</Text>
@@ -163,20 +205,74 @@ const Expenses = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Conditional Filter Inputs */}
-      {filterType === 'category' && (
-        <Picker
-          selectedValue={selectedCategory}
-          onValueChange={(value) => setSelectedCategory(value)}
-          style={{ height: 50, width: '100%', backgroundColor:"black" , color: "white",  }}
-        >
-          <Picker.Item label="Select Category" value="" style={{ backgroundColor: "black" , color:"white"}}/>
-          <Picker.Item label="Food" value="Food" />
-          <Picker.Item label="Transport" value="Transport" />
-          <Picker.Item label="Shopping" value="Shopping" />
-          <Picker.Item label="Entertainment" value="Entertainment" />
-        </Picker>
-      )}
+     {/* Conditional Filter Inputs */}
+{filterType === 'category' && (
+  <Picker
+    selectedValue={selectedCategory}
+    onValueChange={(value) => setSelectedCategory(value)}
+    style={{ height: 50, width: '100%' }}
+    className="bg-gray-800 text-white rounded-lg border border-black"
+  >
+    <Picker.Item
+      label="Select Category"
+      value=""
+      style={{ backgroundColor: "black", color: "white" }}
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Food"
+      value="Food"
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Groceries"
+      value="Groceries"
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Travel"
+      value="Travel"
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Health"
+      value="Health"
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Leisure"
+      value="Leisure"
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Education"
+      value="Education"
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Gadgets"
+      value="Gadgets"
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Bills"
+      value="Bills"
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Shopping"
+      value="Shopping"
+      className="border border-gray-600 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Grooming"
+      value="Grooming"
+      className="border border-gray-900 rounded-lg p-2"
+    />
+  </Picker>
+)}
+
+
 
       {filterType === 'date' && (
         <TouchableOpacity
@@ -222,10 +318,10 @@ const Expenses = () => {
       )}
 
       <TouchableOpacity
-        className="absolute right-4 bottom-4 bg-black w-14 h-14 rounded-full justify-center items-center shadow-lg"
+        className="bg-black p-4 rounded-lg absolute bottom-4 right-4"
         onPress={() => router.push('/pi/PiNavigationScreens/Create')}
       >
-        <Icon name="add" size={24} color="#fff" />
+        <Icon name="add" size={30} color="white" />
       </TouchableOpacity>
     </View>
   );

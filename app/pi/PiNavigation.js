@@ -22,7 +22,7 @@ const PiNavigation = () => {
           }} 
         />
         <Tab.Screen 
-          name="Profile" 
+          name="Insights" 
           component={Profile}
           options={{
             tabBarIcon: ({ color, size }) => (

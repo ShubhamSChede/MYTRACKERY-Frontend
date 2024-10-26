@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Alert, Platform, Modal, FlatList } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Platform, Modal, FlatList, Image } from 'react-native';
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -76,13 +76,20 @@ const Create = () => {
   };
 
   return (
-    <View className="flex-1 bg-white p-4">
+    <View className="flex-1 bg-white">
+      {/* Image at the Top */}
+      <Image
+        source={require('../../../assets/images/spend.png')}
+        className=" mt-5 w-full h-1/3"
+        resizeMode="cover"
+      />
+
       {/* Back Icon */}
       <TouchableOpacity onPress={() => router.push('/pi/PiNavigation')} className="absolute top-4 left-4">
         <Icon name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
 
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center p-4">
         <Text className="text-lg font-bold mb-4">ADD EXPENSE</Text>
 
         <TextInput

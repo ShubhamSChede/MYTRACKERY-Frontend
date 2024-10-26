@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { Picker } from '@react-native-picker/picker';
 import { styled } from 'nativewind';
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
+import { generatePDF } from '../../../components/pdfGenerator'; 
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -148,6 +150,21 @@ export class Profile extends Component {
     }));
   };
 
+  createPDF = async () => {
+    try {
+      const result = await generatePDF({
+        selectedYear: this.state.selectedYear,
+        yearData: this.state.yearData
+      });
+      if (result) {
+        alert('PDF generated successfully!');
+      }
+    } catch (error) {
+      console.error('Error creating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
+  };
+
   render() {
     const { data, yearData, loading, error, selectedYear, expandedExpenseIds } = this.state;
 
@@ -173,8 +190,19 @@ export class Profile extends Component {
 
     return (
       <ScrollView className="p-4 bg-white">
-        <StyledText className="text-xl font-bold mt-4">Welcome, {data.user.username} 👋🏻</StyledText>
-        <StyledText className="text-md font-bold mb-3 shadow-black">Email: {data.user.email}</StyledText>
+
+<StyledView className="flex-row justify-between items-center">
+  {/* User Welcome Message */}
+  <StyledText className="text-xl font-bold ">Welcome, {data.user.username} 👋🏻</StyledText>
+    {/* Export Button */}
+    <TouchableOpacity className="bg-black p-2 rounded-md"  onPress={this.createPDF}>
+    <StyledText className="text-white text-md">📄 Export as PDF</StyledText>
+    </TouchableOpacity>
+</StyledView>
+
+{/* Email */}
+<StyledText className="text-md font-bold mt-2 mb-3 shadow-black">Email: {data.user.email}</StyledText>
+
 
         {/* Year Picker */}
         <Picker
