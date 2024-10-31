@@ -7,7 +7,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 const categoriesList = [
   'Food', 'Groceries', 'Travel', 'Health', 'Leisure',
-  'Education', 'Gadgets', 'Bills', 'Shopping', 'Grooming'
+  'Education', 'Gadgets', 'Bills', 'Shopping', 'Grooming', 'Others', 'Automobile',
 ];
 
 const Create = () => {

@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import { Text, View, ActivityIndicator, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import { Text, View, ActivityIndicator, ScrollView, Dimensions, TouchableOpacity,Alert  } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { Picker } from '@react-native-picker/picker';
 import { styled } from 'nativewind';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import { generatePDF } from '../../../components/pdfGenerator'; 
+import { CommonActions } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 const StyledView = styled(View);
 const StyledText = styled(Text);
@@ -24,6 +26,37 @@ export class Profile extends Component {
   async componentDidMount() {
     await this.fetchDashboardData();
   }
+  
+  handleLogout = async () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Logout",
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('x-auth-token');
+              // Use CommonActions to reset the navigation state
+              this.props.navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'HomeScreen' }],
+                })
+              );
+            } catch (error) {
+              console.error('Error logging out:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
 
   fetchDashboardData = async () => {
     try {
@@ -192,17 +225,22 @@ export class Profile extends Component {
       <ScrollView className="p-4 bg-white">
 
 <StyledView className="flex-row justify-between items-center">
-  {/* User Welcome Message */}
-  <StyledText className="text-xl font-bold ">Welcome, {data.user.username} 👋🏻</StyledText>
-    {/* Export Button */}
-    <TouchableOpacity className="bg-black p-2 rounded-md"  onPress={this.createPDF}>
-    <StyledText className="text-white text-md">📄 Export as PDF</StyledText>
-    </TouchableOpacity>
-</StyledView>
-
-{/* Email */}
-<StyledText className="text-md font-bold mt-2 mb-3 shadow-black">Email: {data.user.email}</StyledText>
-
+          <StyledText className="text-xl font-bold">Welcome, {data.user.username} 👋🏻</StyledText>
+          <TouchableOpacity className="bg-black p-2 rounded-md" onPress={this.createPDF}>
+            <StyledText className="text-white text-md">📄 Export as PDF</StyledText>
+          </TouchableOpacity>
+        </StyledView>
+        <StyledView className="flex-row justify-between items-center">
+          <StyledText className="text-md font-bold mt-2 mb-3 shadow-black">
+            Email: {data.user.email}
+          </StyledText>
+          <TouchableOpacity 
+            className="bg-red-500 p-2 rounded-md" 
+            onPress={this.handleLogout}
+          >
+            <StyledText className="text-white text-md">Logout</StyledText>
+          </TouchableOpacity>
+        </StyledView>
 
         {/* Year Picker */}
         <Picker

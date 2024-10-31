@@ -1,14 +1,24 @@
 import { View, Text, Image } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const HomeScreen = ({ navigation }) => {
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('x-auth-token');
+      if (token) {
+        navigation.replace('PiNavigation'); // Navigate directly to PiNavigation if token exists
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
   return (
     <View className="flex-1">
-      {/* Image covering half the screen */}
       <Image
-        source={require('../assets/images/10478138.jpg')} // Adjust the path as needed
-        className="h-1/2 w-full object-cover" // Half the height, full width, cover the object
+        source={require('../assets/images/10478138.jpg')}
+        className="h-1/2 w-full object-cover"
       />
       
       <View className="flex-1 justify-center items-center bg-white">

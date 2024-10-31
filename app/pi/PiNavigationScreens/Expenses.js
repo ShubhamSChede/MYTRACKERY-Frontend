@@ -18,6 +18,8 @@ const categories = [
   { label: 'Bills', value: 'Bills' },
   { label: 'Shopping', value: 'Shopping' },
   { label: 'Grooming', value: 'Grooming' },
+  { label: 'Automobile', value: 'Automobile' },
+  { label: 'Others', value: 'Others' },
 ];
 
 const Expenses = () => {
@@ -269,6 +271,18 @@ const Expenses = () => {
       value="Grooming"
       className="border border-gray-900 rounded-lg p-2"
     />
+    <Picker.Item
+      label="Automobile"
+      value="Automobile"
+      className="border border-gray-900 rounded-lg p-2"
+    />
+    <Picker.Item
+      label="Others"
+      value="Others"
+      className="border border-gray-900 rounded-lg p-2"
+
+     />
+
   </Picker>
 )}
 
