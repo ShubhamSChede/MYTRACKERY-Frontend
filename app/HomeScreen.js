@@ -15,19 +15,20 @@ const HomeScreen = ({ navigation }) => {
   }, []);
 
   return (
-    <View className="flex-1">
+   
+    <View className="flex-1 bg-black p-7 ">
       <Image
-        source={require('../assets/images/10478138.jpg')}
-        className="h-1/2 w-full object-cover"
+        source={require('../assets/images/10478138.png')}
+        className="h-1/2 w-full object-cover "
       />
       
-      <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-5xl font-bold">EXPENSE TRACKER</Text>
-        <Text className="text-sm font-bold mb-10">Track your expenses easily</Text>
+      <View className="flex-1 justify-center items-center bg-black">
+        <Text className="text-5xl font-bold text-white">EXPENSE TRACKER</Text>
+        <Text className="text-sm font-bold mb-10 text-white">Track your expenses easily</Text>
        
         <TouchableOpacity
           onPress={() => navigation.navigate('Login')}
-          className="bg-black px-6 py-3 rounded-md"
+          className="bg-gray-800 px-6 py-3 rounded-md"
         >
           <Text className="text-white text-lg font-semibold">GET STARTED</Text>
         </TouchableOpacity>

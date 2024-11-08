@@ -22,7 +22,17 @@ const PiNavigation = () => {
   }, []);
 
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: '#000',  // Set background color to black
+          borderTopColor: '#333',   // Set border color to dark gray (optional)
+        },
+        tabBarActiveTintColor: '#fff',  // Active icon color (white)
+        tabBarInactiveTintColor: '#888', // Inactive icon color (gray)
+      }}
+    >
       <Tab.Screen
         name="Expenses"
         component={Expenses}

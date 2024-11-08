@@ -43,21 +43,22 @@ const Login = ({ navigation }) => {
   };
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-black p-7">
       <Image
-        source={require('../../assets/images/loginpic2.png')}
-        className="h-1/3 w-full object-cover"
+        source={require('../../assets/images/loginpic.png')}
+        className="w-full h-1/3 object-cover"
       />
       
-      <View className="flex-1 justify-center items-center bg-white p-4">
-        <Text className="text-lg font-bold mb-4">Login Screen</Text>
+      <View className="mt-10 justify-center items-center bg-black p-2">
+        <Text className="text-2xl font-bold mb-4 text-white "> USER LOGIN</Text>
 
         <TextInput
           value={email}
           onChangeText={setEmail}
           placeholder="Email"
+          placeholderTextColor="#9ca3af"
           keyboardType="email-address"
-          className="border border-gray-300 rounded-md w-full p-2 mb-4"
+          className="border border-gray-900 bg-gray-800 rounded-md w-full p-2 mb-4 text-white placeholder:text-white"
           autoCapitalize="none"
         />
 
@@ -65,14 +66,16 @@ const Login = ({ navigation }) => {
           value={password}
           onChangeText={setPassword}
           placeholder="Password"
+           placeholderTextColor="#9ca3af"
           secureTextEntry
-          className="border border-gray-300 rounded-md w-full p-2 mb-4"
+          className="border border-gray-900 bg-gray-800 rounded-md w-full p-2 mb-4 text-white placeholder:text-white"
+          autoCapitalize="none"
         />
 
         <TouchableOpacity
           onPress={handleLogin}
           disabled={loading}
-          className={`bg-black px-6 py-3 rounded-md w-full mb-2 ${loading ? 'opacity-50' : ''}`}
+          className={`bg-gray-800 px-10 py-3 rounded-md w-full mb-2 ${loading ? 'opacity-50' : ''}`}
         >
           <Text className="text-white text-lg font-semibold text-center">
             {loading ? 'LOGGING IN...' : 'LOGIN'}
@@ -83,7 +86,7 @@ const Login = ({ navigation }) => {
           onPress={() => navigation.navigate('Signup')}
           className="mb-2"
         >
-          <Text className="text-blue-500">Not registered?</Text>
+          <Text className="text-white underline">Not registered?</Text>
         </TouchableOpacity>
       </View>
     </View>

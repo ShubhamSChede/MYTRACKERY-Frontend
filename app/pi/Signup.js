@@ -32,21 +32,22 @@ const Signup = ({ navigation }) => {
   };
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-black p-7">
       <Image
-        source={require('../../assets/images/loginpic2.png')} // Adjust the path as needed
+        source={require('../../assets/images/loginpic.png')} // Adjust the path as needed
         className="h-1/3 w-full object-cover" // 30% of the height
       />
       
-      <View className="flex-1 justify-center items-center bg-white p-4">
-        <Text className="text-lg font-bold mb-4">Signup Screen</Text>
+      <View className="flex-1 justify-center items-center bg-black p-4">
+        <Text className="text-2xl font-bold mb-4 text-white">CREATE ACCOUNT</Text>
 
         {/* Username Input */}
         <TextInput
           value={username}
           onChangeText={setUsername}
           placeholder="Username"
-          className="border border-gray-300 rounded-md w-full p-2 mb-4"
+           placeholderTextColor="#9ca3af"
+          className="border border-gray-900 bg-gray-800 rounded-md w-full p-2 mb-4 text-white placeholder:text-white"
         />
 
         {/* Email Input */}
@@ -54,8 +55,9 @@ const Signup = ({ navigation }) => {
           value={email}
           onChangeText={setEmail}
           placeholder="Email"
+           placeholderTextColor="#9ca3af"
           keyboardType="email-address"
-          className="border border-gray-300 rounded-md w-full p-2 mb-4"
+          className="border border-gray-900 bg-gray-800 rounded-md w-full p-2 mb-4 text-white placeholder:text-white"
         />
 
         {/* Password Input */}
@@ -63,14 +65,15 @@ const Signup = ({ navigation }) => {
           value={password}
           onChangeText={setPassword}
           placeholder="Password"
+           placeholderTextColor="#9ca3af"
           secureTextEntry
-          className="border border-gray-300 rounded-md w-full p-2 mb-4"
+          className="border border-gray-900 bg-gray-800 rounded-md w-full p-2 mb-4 text-white placeholder:text-white"
         />
 
         {/* Signup Button */}
         <TouchableOpacity
           onPress={handleSignup}
-          className="bg-black px-6 py-3 rounded-md w-full mb-2"
+          className="bg-gray-800 px-6 py-3 rounded-md w-full mb-2"
         >
           <Text className="text-white text-lg font-semibold text-center">SIGNUP</Text>
         </TouchableOpacity>
@@ -80,7 +83,7 @@ const Signup = ({ navigation }) => {
           onPress={() => navigation.navigate('Login')}
           className="mb-2"
         >
-          <Text className="text-blue-500">Already registered?</Text>
+          <Text className="text-white underline">Already registered?</Text>
         </TouchableOpacity>
       </View>
     </View>

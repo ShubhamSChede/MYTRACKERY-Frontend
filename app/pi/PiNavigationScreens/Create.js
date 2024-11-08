@@ -76,51 +76,60 @@ const Create = () => {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-black">
       {/* Image at the Top */}
       <Image
-        source={require('../../../assets/images/spend.png')}
-        className=" mt-5 w-full h-1/3"
-        resizeMode="cover"
+        source={require('../../../assets/images/adaptive-icon.png')}
+        className="mt-5 w-full h-1/3"
+        resizeMode="contain"
       />
 
       {/* Back Icon */}
-      <TouchableOpacity onPress={() => router.push('/pi/PiNavigation')} className="absolute top-4 left-4">
-        <Icon name="arrow-back" size={24} color="black" />
+      <TouchableOpacity 
+        onPress={() => router.push('/pi/PiNavigation')} 
+        className="absolute top-4 left-4 bg-gray-900/50 p-2 rounded-full"
+      >
+        <Icon name="arrow-back" size={24} color="white" />
       </TouchableOpacity>
 
       <View className="flex-1 justify-center items-center p-4">
-        <Text className="text-lg font-bold mb-4">ADD EXPENSE</Text>
+        <Text className="text-lg font-bold mb-6 text-white">ADD EXPENSE</Text>
 
+        {/* Amount Input */}
         <TextInput
           placeholder="Amount"
+          placeholderTextColor="#9ca3af"
           value={amount}
           onChangeText={setAmount}
-          className="border border-gray-400 rounded p-2 mb-4 w-full"
+          className="border border-gray-700 rounded-lg p-4 mb-4 w-full bg-gray-900 text-white"
           keyboardType="numeric"
         />
 
+        {/* Category Selection */}
         <TouchableOpacity
           onPress={() => setShowCategoryModal(true)}
-          className="border border-gray-400 rounded p-2 mb-4 w-full"
+          className="border border-gray-700 rounded-lg p-4 mb-4 w-full bg-gray-900"
         >
-          <Text className="text-gray-700">
+          <Text className="text-gray-400">
             {category || 'Select Category'}
           </Text>
         </TouchableOpacity>
 
+        {/* Reason Input */}
         <TextInput
           placeholder="Reason"
+          placeholderTextColor="#9ca3af"
           value={reason}
           onChangeText={setReason}
-          className="border border-gray-400 rounded p-2 mb-4 w-full"
+          className="border border-gray-700 rounded-lg p-4 mb-4 w-full bg-gray-900 text-white"
         />
 
+        {/* Date Selection */}
         <TouchableOpacity
           onPress={() => setShowDatePicker(true)}
-          className="border border-gray-400 rounded p-2 mb-4 w-full"
+          className="border border-gray-700 rounded-lg p-4 mb-6 w-full bg-gray-900"
         >
-          <Text className="text-gray-700">
+          <Text className="text-gray-400">
             {date.toISOString().split('T')[0]}
           </Text>
         </TouchableOpacity>
@@ -131,14 +140,16 @@ const Create = () => {
             mode="date"
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={onDateChange}
+            // Note: DateTimePicker styling is platform-specific
           />
         )}
 
+        {/* Add Expense Button */}
         <TouchableOpacity
           onPress={handleAddExpense}
-          className="bg-black p-4 rounded-md w-full"
+          className="bg-gray-900 mb-5 p-4 rounded-lg w-full"
         >
-          <Text className="text-white text-center">Add Expense</Text>
+          <Text className="text-white text-center font-bold">Add Expense</Text>
         </TouchableOpacity>
       </View>
 
@@ -149,26 +160,28 @@ const Create = () => {
         transparent={true}
         onRequestClose={() => setShowCategoryModal(false)}
       >
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-          <View className="bg-white rounded-lg p-4 w-3/4">
-            <Text className="text-lg font-bold mb-4">Select Category</Text>
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-gray-900 rounded-t-3xl p-6 h-2/3">
+            <Text className="text-xl font-bold mb-4 text-white">Select Category</Text>
             <FlatList
               data={categoriesList}
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   onPress={() => handleCategorySelect(item)}
-                  className="border border-gray-300 rounded p-2 mb-2"
+                  className="border border-gray-700 rounded-lg p-4 mb-2 bg-gray-800/50"
                 >
-                  <Text>{item}</Text>
+                  <Text className="text-white">{item}</Text>
                 </TouchableOpacity>
               )}
+              showsVerticalScrollIndicator={false}
+              className="mb-4"
             />
             <TouchableOpacity
               onPress={() => setShowCategoryModal(false)}
-              className="bg-black p-2 rounded mt-4"
+              className="bg-gray-800 p-4 rounded-lg border border-gray-700"
             >
-              <Text className="text-white text-center">Close</Text>
+              <Text className="text-white text-center font-bold">Close</Text>
             </TouchableOpacity>
           </View>
         </View>

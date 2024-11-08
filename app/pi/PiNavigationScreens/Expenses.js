@@ -156,187 +156,129 @@ const Expenses = () => {
   };
 
   const renderItem = ({ item }) => (
-    <View className="bg-emerald-100 p-2 m-2 rounded-lg shadow-md">
+    <View className="bg-gray-900 p-3 m-2 rounded-lg shadow-lg border border-gray-800">
       <TouchableOpacity onPress={() => setExpandedExpenseId(expandedExpenseId === item._id ? null : item._id)}>
         <View className="flex-row justify-between items-center">
-          <Text className="text-lg font-bold">{item.category}</Text>
-          <Text className="text-base text-gray-800">₹{item.amount.toFixed(2)}</Text>
-          <Text className="text-sm text-gray-600">
+          <Text className="text-lg font-bold text-white">{item.category}</Text>
+          <Text className="text-base text-green-400">₹{item.amount.toFixed(2)}</Text>
+          <Text className="text-sm text-gray-400">
             {new Date(item.date).toLocaleDateString()}
           </Text>
-          <TouchableOpacity onPress={() => deleteExpense(item._id)}>
-            <Text className="text-red-600 ml-4">🗑️</Text>
+          <TouchableOpacity 
+            onPress={() => deleteExpense(item._id)}
+            className="bg-red-500/20 p-2 rounded-full"
+          >
+            <Text className="text-red-500">🗑️</Text>
           </TouchableOpacity>
         </View>
         {expandedExpenseId === item._id && (
-          <Text className="text-gray-600 mt-2">Reason: {item.reason}</Text>
+          <Text className="text-gray-400 mt-2 p-2 bg-gray-800/50 rounded-lg">Reason: {item.reason}</Text>
         )}
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <View className="flex-1 p-4 bg-gray-100 flex-col">
-      <Text className="text-2xl font-bold mb-4">Expenses</Text>
+    <View className="flex-1 p-4 bg-black flex-col">
+      <Text className="text-2xl font-bold mb-4 text-white">Expenses</Text>
 
       {/* Filter Type Selection */}
-      <View className="flex-row justify-evenly  mb-4  mt-4">
+      <View className="flex-row justify-between mb-4 mt-4">
         <TouchableOpacity
-          className={`p-2 rounded-lg ${filterType === 'category' ? 'bg-black' : 'bg-black'}`}
+          className={`p-3 rounded-lg ${
+            filterType === 'category' ? 'bg-gray-800' : 'bg-gray-900'
+          } border border-gray-700`}
           onPress={() => setFilterType('category')}
         >
           <Text className="text-white">🔎 Category</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className={`p-2 rounded-lg ${filterType === 'date' ? 'bg-black' : 'bg-black'}`}
+          className={`p-3 rounded-lg ${
+            filterType === 'date' ? 'bg-gray-800' : 'bg-gray-900'
+          } border border-gray-700`}
           onPress={() => setFilterType('date')}
         >
           <Text className="text-white">🔎 Date</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className="bg-black p-2 rounded-lg"
+          className="bg-gray-800 p-3 rounded-lg border border-gray-700"
           onPress={filterExpenses}
         >
           <Text className="text-white">✅ Apply</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className="bg-black p-2 rounded-lg"
+          className="bg-gray-800 p-3 rounded-lg border border-gray-700"
           onPress={resetFilters}
         >
           <Text className="text-white">⏪ Reset</Text>
         </TouchableOpacity>
       </View>
 
-     {/* Conditional Filter Inputs */}
-{filterType === 'category' && (
-  <Picker
-    selectedValue={selectedCategory}
-    onValueChange={(value) => setSelectedCategory(value)}
-    style={{ height: 50, width: '100%' }}
-    className="bg-gray-800 text-white rounded-lg border border-black"
-  >
-    <Picker.Item
-      label="Select Category"
-      value=""
-      style={{ backgroundColor: "black", color: "white" }}
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Food"
-      value="Food"
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Groceries"
-      value="Groceries"
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Travel"
-      value="Travel"
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Health"
-      value="Health"
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Leisure"
-      value="Leisure"
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Education"
-      value="Education"
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Gadgets"
-      value="Gadgets"
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Bills"
-      value="Bills"
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Shopping"
-      value="Shopping"
-      className="border border-gray-600 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Grooming"
-      value="Grooming"
-      className="border border-gray-900 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Automobile"
-      value="Automobile"
-      className="border border-gray-900 rounded-lg p-2"
-    />
-    <Picker.Item
-      label="Others"
-      value="Others"
-      className="border border-gray-900 rounded-lg p-2"
-
-     />
-
-  </Picker>
-)}
-
-
+      {/* Category and Date filters */}
+      {filterType === 'category' && (
+        <View className="bg-gray-900 rounded-lg mb-4 border border-gray-800">
+          <Picker
+            selectedValue={selectedCategory}
+            onValueChange={(value) => setSelectedCategory(value)}
+            style={{ height: 50, width: '100%' }}
+            dropdownIconColor="white"
+            className="text-white"
+          >
+            <Picker.Item label="Select Category" value="" style={{ backgroundColor: "#1f2937", color: "white" }} />
+            {categories.map((category) => (
+              <Picker.Item
+                key={category.value}
+                label={category.label}
+                value={category.value}
+                style={{ backgroundColor: "#1f2937", color: "white" }}
+              />
+            ))}
+          </Picker>
+        </View>
+      )}
 
       {filterType === 'date' && (
         <TouchableOpacity
           onPress={() => setShowDatePicker(true)}
-          className="bg-black p-2 rounded-lg border border-gray-300 justify-center mt-2"
+          className="bg-gray-900 p-4 rounded-lg border border-gray-800 justify-center mt-2 mb-4"
         >
-          <Text className="text-white">
+          <Text className="text-white text-center">
             {selectedDate ? formatDate(selectedDate) : 'Select Date'}
           </Text>
         </TouchableOpacity>
       )}
 
-      {/* Date Picker Modal */}
-      {showDatePicker && (
-        <DateTimePicker
-          value={selectedDate || new Date()}
-          mode="date"
-          display="default"
-          className=""
-          onChange={(event, date) => {
-            setShowDatePicker(false);
-            if (date) {
-              setSelectedDate(date);
-            }
-          }}
-        />
-      )}
-
-      {/* Expenses List */}
+      {/* Add FlatList for expense cards */}
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#3b82f6" />
       ) : (
         <FlatList
           data={filteredExpenses}
           renderItem={renderItem}
           keyExtractor={(item) => item._id}
-          ListEmptyComponent={
-            <Text className="text-center text-base text-gray-800 mt-6">
-              No expenses found.
-            </Text>
-          }
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: 80 }} // Add padding at bottom for FAB
         />
       )}
 
+      {/* Add button */}
       <TouchableOpacity
-        className="bg-black p-4 rounded-lg absolute bottom-4 right-4"
+        className="bg-slate-700 border border-gray-900 p-4 rounded-full absolute bottom-6 right-6 shadow-lg z-10"
         onPress={() => router.push('/pi/PiNavigationScreens/Create')}
       >
         <Icon name="add" size={30} color="white" />
       </TouchableOpacity>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate || new Date()}
+          mode="date"
+          onChange={(event, date) => {
+            setShowDatePicker(false);
+            if (date) setSelectedDate(date);
+          }}
+        />
+      )}
     </View>
   );
 };
