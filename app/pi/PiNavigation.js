@@ -34,15 +34,7 @@ const PiNavigation = () => {
         tabBarInactiveTintColor: '#888', // Inactive icon color (gray)
       }}
     >
-      <Tab.Screen
-        name="Expense log"
-        component={Expenses}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icon2 name="money" size={size} color={color} />
-          ),
-        }}
-      />
+
       <Tab.Screen
         name="Spend insights"
         component={Profile}
@@ -52,12 +44,21 @@ const PiNavigation = () => {
           ),
         }}
       />
+      <Tab.Screen
+        name="Expense log"
+        component={Expenses}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon2 name="money" size={size} color={color} />
+          ),
+        }}
+      />
       < Tab.Screen
         name="Monthly journal"
         component={Journal}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Icon2 name="user" size={size} color={color} />
+            <Icon2 name="book" size={size} color={color} />
           ),
         }}
       />

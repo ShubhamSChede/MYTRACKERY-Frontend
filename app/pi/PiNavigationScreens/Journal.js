@@ -7,15 +7,21 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LineChart } from 'react-native-chart-kit';
+import { X, Plus, PencilLine, Calendar, Trash } from 'lucide-react-native';
+
+const screenWidth = Dimensions.get('window').width;
 
 const Journal = () => {
   const [journals, setJournals] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(null);
   const [editing, setEditing] = useState(false);
-  const [currentMonthYear, setCurrentMonthYear] = useState('');
+  const [yearData, setYearData] = useState({});
   
   const [formData, setFormData] = useState({
     monthYear: '',
@@ -25,6 +31,53 @@ const Journal = () => {
     health: { rating: 5, note: '' },
     mood: { rating: 5, note: '' },
   });
+
+  const chartConfig = {
+    backgroundColor: '#1e1e1e',
+    backgroundGradientFrom: '#1e1e1e',
+    backgroundGradientTo: '#1e1e1e',
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    style: {
+      borderRadius: 16,
+    },
+    propsForDots: {
+      r: '6',
+      strokeWidth: '2',
+      stroke: '#ffa726',
+    },
+  };
+
+  // Validation functions
+  const validateMonthYear = (value) => {
+    const regex = /^\d{4}-(0[1-9]|1[0-2])$/;
+    if (!regex.test(value)) {
+      return false;
+    }
+    const currentYear = new Date().getFullYear();
+    const year = parseInt(value.split('-')[0]);
+    return year >= 2000 && year <= currentYear + 1;
+  };
+
+  const validateForm = () => {
+    const errors = [];
+
+    if (!selectedMonth && !formData.monthYear) {
+      errors.push('Month and Year is required');
+    } else if (!selectedMonth && !validateMonthYear(formData.monthYear)) {
+      errors.push('Invalid Month-Year format. Use YYYY-MM (e.g., 2024-12)');
+    }
+
+    if (!formData.monthHighlight?.trim()) {
+      errors.push('Month Highlight is required');
+    }
+    if (!formData.skillsLearnt?.trim()) {
+      errors.push('Skills Learnt is required');
+    }
+
+    return errors;
+  };
 
   // Fetch all journals
   const fetchJournals = async () => {
@@ -39,6 +92,7 @@ const Journal = () => {
       const data = await response.json();
       if (response.ok) {
         setJournals(data);
+        organizeDataByYear(data);
       } else {
         Alert.alert('Error', data.message);
       }
@@ -49,29 +103,89 @@ const Journal = () => {
     }
   };
 
-  // Create new journal
+  const organizeDataByYear = (data) => {
+    const organized = data.reduce((acc, journal) => {
+      const [year, month] = journal.monthYear.split('-');
+      if (!acc[year]) {
+        acc[year] = {
+          months: {},
+          chartData: {
+            labels: Array(12).fill('').map((_, i) => getMonthName(i + 1)),
+            datasets: [
+              {
+                data: Array(12).fill(0),
+                color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`,
+                strokeWidth: 2,
+              },
+              {
+                data: Array(12).fill(0),
+                color: (opacity = 1) => `rgba(54, 162, 235, ${opacity})`,
+                strokeWidth: 2,
+              },
+              {
+                data: Array(12).fill(0),
+                color: (opacity = 1) => `rgba(75, 192, 192, ${opacity})`,
+                strokeWidth: 2,
+              },
+            ],
+            legend: ['Productivity', 'Health', 'Mood'],
+          },
+        };
+      }
+      
+      acc[year].months[month] = journal;
+      const monthIndex = parseInt(month) - 1;
+      acc[year].chartData.datasets[0].data[monthIndex] = journal.productivity.rating;
+      acc[year].chartData.datasets[1].data[monthIndex] = journal.health.rating;
+      acc[year].chartData.datasets[2].data[monthIndex] = journal.mood.rating;
+      
+      return acc;
+    }, {});
+    setYearData(organized);
+  };
+
+  const getMonthName = (month) => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
+  };
+
   const createJournal = async () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('x-auth-token');
+      
+      // Ensure proper monthYear format
+      const payload = {
+        monthYear: selectedMonth || formData.monthYear,
+        monthHighlight: formData.monthHighlight,
+        skillsLearnt: formData.skillsLearnt,
+        productivity: formData.productivity,
+        health: formData.health,
+        mood: formData.mood
+      };
+  
+  
       const response = await fetch('https://expensetrackerbackend-j2tz.onrender.com/api/journal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-auth-token': token,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload)
       });
+  
       const data = await response.json();
+      
+  
       if (response.ok) {
         Alert.alert('Success', 'Journal created successfully');
-        fetchJournals();
+        await fetchJournals();
         resetForm();
       } else {
-        Alert.alert('Error', data.message);
+        Alert.alert('Error', data.message || 'Failed to create journal');
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to create journal');
+      Alert.alert('Debug Error', error.toString());
     } finally {
       setLoading(false);
     }
@@ -82,22 +196,24 @@ const Journal = () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('x-auth-token');
-      const response = await fetch(`https://expensetrackerbackend-j2tz.onrender.com/api/journal/${currentMonthYear}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token,
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `https://expensetrackerbackend-j2tz.onrender.com/api/journal/${selectedMonth}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-auth-token': token,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
       const data = await response.json();
       if (response.ok) {
         Alert.alert('Success', 'Journal updated successfully');
-        fetchJournals();
-        resetForm();
+        await fetchJournals();
         setEditing(false);
       } else {
-        Alert.alert('Error', data.message);
+        Alert.alert('Error', data.message || 'Failed to update journal');
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to update journal');
@@ -106,42 +222,53 @@ const Journal = () => {
     }
   };
 
-  // Delete journal
   const deleteJournal = async (monthYear) => {
-    Alert.alert(
-      'Confirm Delete',
-      'Are you sure you want to delete this journal?',
-      [
-        { text: 'Cancel', style: 'cancel' },
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('x-auth-token');
+      const response = await fetch(
+        `https://expensetrackerbackend-j2tz.onrender.com/api/journal/${monthYear}`,
         {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const token = await AsyncStorage.getItem('x-auth-token');
-              const response = await fetch(`https://expensetrackerbackend-j2tz.onrender.com/api/journal/${monthYear}`, {
-                method: 'DELETE',
-                headers: {
-                  'x-auth-token': token,
-                },
-              });
-              if (response.ok) {
-                Alert.alert('Success', 'Journal deleted successfully');
-                fetchJournals();
-              } else {
-                const data = await response.json();
-                Alert.alert('Error', data.message);
-              }
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete journal');
-            } finally {
-              setLoading(false);
-            }
+          method: 'DELETE',
+          headers: {
+            'x-auth-token': token,
           },
-        },
-      ]
-    );
+        }
+      );
+      
+      if (response.ok) {
+        Alert.alert('Success', 'Journal deleted successfully');
+        await fetchJournals();
+        resetForm();
+      } else {
+        const data = await response.json();
+        Alert.alert('Error', data.message || 'Failed to delete journal');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to delete journal');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    const validationErrors = validateForm();
+    
+    if (validationErrors.length > 0) {
+      Alert.alert(
+        'Validation Error',
+        validationErrors.join('\n'),
+        [{ text: 'OK', style: 'default' }]
+      );
+      return;
+    }
+
+    if (editing) {
+      await updateJournal();
+    } 
+    if(selectedMonth) {
+      await createJournal();
+    }
   };
 
   const resetForm = () => {
@@ -153,205 +280,324 @@ const Journal = () => {
       health: { rating: 5, note: '' },
       mood: { rating: 5, note: '' },
     });
-  };
-
-  const editJournal = (journal) => {
-    setFormData(journal);
-    setCurrentMonthYear(journal.monthYear);
-    setEditing(true);
+    setSelectedMonth(null);
+    setEditing(false);
   };
 
   useEffect(() => {
     fetchJournals();
   }, []);
 
+  const renderForm = () => (
+    <ScrollView className="flex-1">
+      <View className="mb-4">
+        <Text className="text-white text-lg mb-2">Month Highlight</Text>
+        <TextInput
+          className="bg-gray-800 rounded-md p-3 text-white"
+          placeholder="What was the highlight of your month?"
+          placeholderTextColor="#9ca3af"
+          multiline
+          numberOfLines={3}
+          value={formData.monthHighlight}
+          onChangeText={(text) => setFormData({ ...formData, monthHighlight: text })}
+        />
+      </View>
+
+      <View className="mb-4">
+        <Text className="text-white text-lg mb-2">Skills Learnt</Text>
+        <TextInput
+          className="bg-gray-800 rounded-md p-3 text-white"
+          placeholder="What skills did you learn this month?"
+          placeholderTextColor="#9ca3af"
+          multiline
+          numberOfLines={3}
+          value={formData.skillsLearnt}
+          onChangeText={(text) => setFormData({ ...formData, skillsLearnt: text })}
+        />
+      </View>
+
+      {/* Productivity Section */}
+      <View className="mb-6">
+        <Text className="text-white text-lg mb-2">Productivity</Text>
+        <View className="bg-gray-800 rounded-md p-4">
+          <Text className="text-white mb-2">Rating: {formData.productivity.rating}</Text>
+          <Slider
+            minimumValue={1}
+            maximumValue={10}
+            step={1}
+            value={formData.productivity.rating}
+            onValueChange={(value) =>
+              setFormData({
+                ...formData,
+                productivity: { ...formData.productivity, rating: value },
+              })
+            }
+            minimumTrackTintColor="#4ade80"
+            maximumTrackTintColor="#6b7280"
+            thumbTintColor="#4ade80"
+          />
+          <TextInput
+            className="mt-3 bg-gray-700 rounded-md p-3 text-white"
+            placeholder="Notes on productivity..."
+            placeholderTextColor="#9ca3af"
+            multiline
+            value={formData.productivity.note}
+            onChangeText={(text) =>
+              setFormData({
+                ...formData,
+                productivity: { ...formData.productivity, note: text },
+              })
+            }
+          />
+        </View>
+      </View>
+
+      {/* Health Section */}
+      <View className="mb-6">
+        <Text className="text-white text-lg mb-2">Health</Text>
+        <View className="bg-gray-800 rounded-md p-4">
+          <Text className="text-white mb-2">Rating: {formData.health.rating}</Text>
+          <Slider
+            minimumValue={1}
+            maximumValue={10}
+            step={1}
+            value={formData.health.rating}
+            onValueChange={(value) =>
+              setFormData({
+                ...formData,
+                health: { ...formData.health, rating: value },
+              })
+            }
+            minimumTrackTintColor="#60a5fa"
+            maximumTrackTintColor="#6b7280"
+            thumbTintColor="#60a5fa"
+          />
+          <TextInput
+            className="mt-3 bg-gray-700 rounded-md p-3 text-white"
+            placeholder="Notes on health..."
+            placeholderTextColor="#9ca3af"
+            multiline
+            value={formData.health.note}
+            onChangeText={(text) =>
+              setFormData({
+                ...formData,
+                health: { ...formData.health, note: text },
+              })
+            }
+          />
+        </View>
+      </View>
+
+      {/* Mood Section */}
+      <View className="mb-6">
+        <Text className="text-white text-lg mb-2">Mood</Text>
+        <View className="bg-gray-800 rounded-md p-4">
+          <Text className="text-white mb-2">Rating: {formData.mood.rating}</Text>
+          <Slider
+            minimumValue={1}
+            maximumValue={10}
+            step={1}
+            value={formData.mood.rating}
+            onValueChange={(value) =>
+              setFormData({
+                ...formData,
+                mood: { ...formData.mood, rating: value },
+              })
+            }
+            minimumTrackTintColor="#f472b6"
+            maximumTrackTintColor="#6b7280"
+            thumbTintColor="#f472b6"
+          />
+          <TextInput
+            className="mt-3 bg-gray-700 rounded-md p-3 text-white"
+            placeholder="Notes on mood..."
+            placeholderTextColor="#9ca3af"
+            multiline
+            value={formData.mood.note}
+            onChangeText={(text) =>
+              setFormData({
+                ...formData,
+                mood: { ...formData.mood, note: text },
+              })
+            }
+          />
+        </View>
+      </View>
+
+      <TouchableOpacity
+        className="bg-blue-600 p-4 rounded-md mb-6"
+        onPress={handleSubmit}
+      >
+        <Text className="text-white text-center font-bold text-lg">
+          {editing ? 'Update Journal' : 'Create Journal'}
+        </Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+
+  const renderMonthCard = (year, month) => {
+    const monthData = yearData[year]?.months[month];
+    const monthNumber = month.padStart(2, '0');
+    const monthName = getMonthName(parseInt(month));
+    
+    return (
+      <TouchableOpacity
+        key={`${year}-${month}`}
+        className="bg-gray-800 p-4 rounded-lg m-1 flex-1 min-w-[80px]"
+        onPress={() => {
+          setSelectedMonth(`${year}-${monthNumber}`);
+          if (monthData) {
+            setFormData({
+              monthYear: `${year}-${monthNumber}`,
+              monthHighlight: monthData.monthHighlight,
+              skillsLearnt: monthData.skillsLearnt,
+              productivity: monthData.productivity,
+              health: monthData.health,
+              mood: monthData.mood,
+            });
+          } else {
+            setFormData({
+              ...formData,
+              monthYear: `${year}-${monthNumber}`,
+            });
+          }
+        }}
+      >
+        <Text className="text-white font-bold">{monthName}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#0000ff" />
+      <View className="flex-1 justify-center items-center bg-black">
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
+    );
+  }
+
+  if (selectedMonth) {
+    const [year, month] = selectedMonth.split('-');
+    const monthData = yearData[year]?.months[month];
+
+    return (
+      <View className="flex-1 bg-black p-4">
+        <View className="flex-row justify-between items-center mb-4">
+          <TouchableOpacity onPress={resetForm} className="p-2">
+            <X color="#ffffff" size={24} />
+          </TouchableOpacity>
+          
+          {monthData && !editing ? (
+  <View className="flex-row">
+    <TouchableOpacity 
+      onPress={() => setEditing(true)} 
+      className="p-2"
+    >
+      <PencilLine color="#ffffff" size={24} />
+    </TouchableOpacity>
+    <TouchableOpacity 
+      onPress={() => {
+        Alert.alert(
+          'Delete Journal',
+          'Are you sure you want to delete this journal entry?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Delete', 
+              style: 'destructive',
+              onPress: () => deleteJournal(selectedMonth)
+            }
+          ]
+        );
+      }} 
+      className="p-2 ml-2"
+    >
+      <Trash color="#ff4444" size={24} />
+    </TouchableOpacity>
+  </View>
+) : null}
+        </View>
+
+        {editing ? (
+          renderForm()
+        ) : (
+          <ScrollView className="flex-1">
+            {monthData ? (
+              <View>
+                <Text className="text-white text-2xl font-bold mb-4">{getMonthName(parseInt(month))} {year}</Text>
+                <View className="bg-gray-800 rounded-lg p-4 mb-4">
+                  <Text className="text-white text-xl font-bold mb-2">Highlight</Text>
+                  <Text className="text-gray-300">{monthData.monthHighlight}</Text>
+                </View>
+
+                <View className="bg-gray-800 rounded-lg p-4 mb-4">
+                  <Text className="text-white text-xl font-bold mb-2">Skills Learnt</Text>
+                  <Text className="text-gray-300">{monthData.skillsLearnt}</Text>
+                </View>
+
+                <View className="bg-gray-800 rounded-lg p-4 mb-4">
+                  <Text className="text-white text-xl font-bold mb-2">Productivity</Text>
+                  <Text className="text-green-500 text-lg">Rating: {monthData.productivity.rating}/10</Text>
+                  <Text className="text-gray-300 mt-2">{monthData.productivity.note}</Text>
+                </View>
+
+                <View className="bg-gray-800 rounded-lg p-4 mb-4">
+                  <Text className="text-white text-xl font-bold mb-2">Health</Text>
+                  <Text className="text-blue-500 text-lg">Rating: {monthData.health.rating}/10</Text>
+                  <Text className="text-gray-300 mt-2">{monthData.health.note}</Text>
+                </View>
+
+                <View className="bg-gray-800 rounded-lg p-4 mb-4">
+                  <Text className="text-white text-xl font-bold mb-2">Mood</Text>
+                  <Text className="text-pink-500 text-lg">Rating: {monthData.mood.rating}/10</Text>
+                  <Text className="text-gray-300 mt-2">{monthData.mood.note}</Text>
+                </View>
+              </View>
+            ) : (
+              <View className="flex-1 justify-center items-center">
+                <Text className="text-gray-400 text-lg mb-4">No journal entry for this month</Text>
+                <TouchableOpacity
+                  className="bg-blue-600 px-6 py-3 rounded-md"
+                  onPress={() => setEditing(true)}
+                >
+                  <Text className="text-white font-bold">Create Entry</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </ScrollView>
+        )}
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-100">
-      <View className="p-5 bg-white m-3 rounded-lg shadow">
-        <Text className="text-2xl font-bold mb-5 text-gray-800">
-          {editing ? 'Edit Journal' : 'New Journal Entry'}
-        </Text>
-        
-        <TextInput
-          className="border border-gray-300 rounded-md p-3 mb-4 text-base"
-          placeholder="Month Year (YYYY-MM)"
-          value={formData.monthYear}
-          onChangeText={(text) => setFormData({ ...formData, monthYear: text })}
-          editable={!editing}
-          placeholderTextColor="#9ca3af"
-        />
-
-        <TextInput
-          className="border border-gray-300 rounded-md p-3 mb-4 text-base"
-          placeholder="Month Highlight"
-          value={formData.monthHighlight}
-          onChangeText={(text) => setFormData({ ...formData, monthHighlight: text })}
-          placeholderTextColor="#9ca3af"
-        />
-
-        <TextInput
-          className="border border-gray-300 rounded-md p-3 mb-4 text-base"
-          placeholder="Skills Learnt"
-          value={formData.skillsLearnt}
-          onChangeText={(text) => setFormData({ ...formData, skillsLearnt: text })}
-          placeholderTextColor="#9ca3af"
-        />
-
-        {/* Productivity Section */}
-        <Text className="text-lg font-semibold mt-2 mb-1 text-gray-700">Productivity</Text>
-        <Slider
-          style={{ height: 40 }}
-          minimumValue={1}
-          maximumValue={10}
-          step={1}
-          value={formData.productivity.rating}
-          onValueChange={(value) =>
-            setFormData({
-              ...formData,
-              productivity: { ...formData.productivity, rating: value },
-            })
-          }
-        />
-        <Text className="text-center mb-2 text-gray-600">
-          Rating: {formData.productivity.rating}
-        </Text>
-        <TextInput
-          className="border border-gray-300 rounded-md p-3 mb-4 text-base"
-          placeholder="Productivity Note"
-          value={formData.productivity.note}
-          onChangeText={(text) =>
-            setFormData({
-              ...formData,
-              productivity: { ...formData.productivity, note: text },
-            })
-          }
-          placeholderTextColor="#9ca3af"
-        />
-
-        {/* Health Section */}
-        <Text className="text-lg font-semibold mt-2 mb-1 text-gray-700">Health</Text>
-        <Slider
-          style={{ height: 40 }}
-          minimumValue={1}
-          maximumValue={10}
-          step={1}
-          value={formData.health.rating}
-          onValueChange={(value) =>
-            setFormData({
-              ...formData,
-              health: { ...formData.health, rating: value },
-            })
-          }
-        />
-        <Text className="text-center mb-2 text-gray-600">
-          Rating: {formData.health.rating}
-        </Text>
-        <TextInput
-          className="border border-gray-300 rounded-md p-3 mb-4 text-base"
-          placeholder="Health Note"
-          value={formData.health.note}
-          onChangeText={(text) =>
-            setFormData({
-              ...formData,
-              health: { ...formData.health, note: text },
-            })
-          }
-          placeholderTextColor="#9ca3af"
-        />
-
-        {/* Mood Section */}
-        <Text className="text-lg font-semibold mt-2 mb-1 text-gray-700">Mood</Text>
-        <Slider
-          style={{ height: 40 }}
-          minimumValue={1}
-          maximumValue={10}
-          step={1}
-          value={formData.mood.rating}
-          onValueChange={(value) =>
-            setFormData({
-              ...formData,
-              mood: { ...formData.mood, rating: value },
-            })
-          }
-        />
-        <Text className="text-center mb-2 text-gray-600">
-          Rating: {formData.mood.rating}
-        </Text>
-        <TextInput
-          className="border border-gray-300 rounded-md p-3 mb-4 text-base"
-          placeholder="Mood Note"
-          value={formData.mood.note}
-          onChangeText={(text) =>
-            setFormData({
-              ...formData,
-              mood: { ...formData.mood, note: text },
-            })
-          }
-          placeholderTextColor="#9ca3af"
-        />
-
-        <TouchableOpacity
-          className={`p-4 rounded-md mb-2 ${editing ? 'bg-green-500' : 'bg-blue-500'}`}
-          onPress={editing ? updateJournal : createJournal}
-        >
-          <Text className="text-white text-center font-semibold text-base">
-            {editing ? 'Update Journal' : 'Create Journal'}
-          </Text>
-        </TouchableOpacity>
-
-        {editing && (
-          <TouchableOpacity
-            className="p-4 rounded-md mb-2 bg-gray-500"
-            onPress={() => {
-              setEditing(false);
-              resetForm();
-            }}
-          >
-            <Text className="text-white text-center font-semibold text-base">Cancel</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View className="p-5">
-        <Text className="text-2xl font-bold mb-5 text-gray-800">Journal Entries</Text>
-        {journals.map((journal) => (
-          <View key={journal.monthYear} className="bg-white p-4 rounded-lg shadow mb-4">
-            <Text className="text-xl font-bold mb-1 text-gray-800">{journal.monthYear}</Text>
-            <Text className="text-base mb-1 text-gray-700">{journal.monthHighlight}</Text>
-            <Text className="text-sm mb-3 text-gray-600">Skills: {journal.skillsLearnt}</Text>
-            
-            <View className="mb-3">
-              <Text className="text-gray-700">Productivity: {journal.productivity.rating}/10</Text>
-              <Text className="text-gray-700">Health: {journal.health.rating}/10</Text>
-              <Text className="text-gray-700">Mood: {journal.mood.rating}/10</Text>
-            </View>
-
-            <View className="flex-row justify-between">
-              <TouchableOpacity
-                className="bg-green-500 px-4 py-2 rounded-md flex-1 mr-2"
-                onPress={() => editJournal(journal)}
-              >
-                <Text className="text-white text-center font-semibold">Edit</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                className="bg-red-500 px-4 py-2 rounded-md flex-1 ml-2"
-                onPress={() => deleteJournal(journal.monthYear)}
-              >
-                <Text className="text-white text-center font-semibold">Delete</Text>
-              </TouchableOpacity>
-            </View>
+    <ScrollView className="flex-1 bg-black p-4">
+      {Object.keys(yearData).sort().reverse().map(year => (
+        <View key={year} className="mb-6">
+          <Text className="text-white text-xl font-bold mb-4">{year}</Text>
+          
+          <View className="mb-4">
+            <LineChart
+              data={yearData[year].chartData}
+              width={screenWidth - 32}
+              height={220}
+              chartConfig={chartConfig}
+              bezier
+              style={{
+                marginVertical: 8,
+                borderRadius: 16,
+              }}
+              legend={yearData[year].chartData.legend}
+            />
           </View>
-        ))}
-      </View>
+
+          <View className="flex-row flex-wrap justify-between">
+            {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(month => 
+              renderMonthCard(year, month)
+            )}
+          </View>
+        </View>
+      ))}
     </ScrollView>
   );
 };
