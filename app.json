@@ -28,7 +28,8 @@
       "favicon": "./assets/images/spend.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
@@ -38,6 +39,7 @@
         "projectId": "a3ecbf52-fa1d-40a9-8da9-1a5313a5dfb7"
       }
     },
-    "owner": "ssc15"
+    "owner": "ssc15",
+    "newArchEnabled": true
   }
 }

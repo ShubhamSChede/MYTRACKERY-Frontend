@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon2 from 'react-native-vector-icons/FontAwesome';
 import Expenses from './PiNavigationScreens/Expenses';
 import Profile from './PiNavigationScreens/Profile';
+import Journal from './PiNavigationScreens/Journal';
 
 const Tab = createBottomTabNavigator();
 
@@ -34,7 +35,7 @@ const PiNavigation = () => {
       }}
     >
       <Tab.Screen
-        name="Expenses"
+        name="Expense log"
         component={Expenses}
         options={{
           tabBarIcon: ({ color, size }) => (
@@ -43,11 +44,20 @@ const PiNavigation = () => {
         }}
       />
       <Tab.Screen
-        name="Insights"
+        name="Spend insights"
         component={Profile}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Icon2 name="bar-chart" size={size} color={color} />
+          ),
+        }}
+      />
+      < Tab.Screen
+        name="Monthly journal"
+        component={Journal}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon2 name="user" size={size} color={color} />
           ),
         }}
       />

@@ -23,8 +23,10 @@ const HomeScreen = ({ navigation }) => {
       />
       
       <View className="flex-1 justify-center items-center bg-black">
-        <Text className="text-5xl font-bold text-white">EXPENSE TRACKER</Text>
-        <Text className="text-sm font-bold mb-10 text-white">Track your expenses easily</Text>
+        <Text className="text-5xl font-bold text-white mb-2">TRACKNEST</Text>
+        
+        <Text className="text-sm font-bold text-white">Finance and growth all in </Text>
+        <Text className="text-sm font-bold mb-10 text-white">one place.</Text>
        
         <TouchableOpacity
           onPress={() => navigation.navigate('Login')}
