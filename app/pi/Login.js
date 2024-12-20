@@ -45,7 +45,7 @@ const Login = ({ navigation }) => {
   return (
     <View className="flex-1 bg-black p-7">
       <Image
-        source={require('../../assets/images/loginpic.png')}
+        source={require('../../assets/images/4860253.jpg')}
         className="w-full h-1/3 object-cover"
       />
       

@@ -34,7 +34,7 @@ const Signup = ({ navigation }) => {
   return (
     <View className="flex-1 bg-black p-7">
       <Image
-        source={require('../../assets/images/loginpic.png')} // Adjust the path as needed
+        source={require('../../assets/images/4860253.jpg')} // Adjust the path as needed
         className="h-1/3 w-full object-cover" // 30% of the height
       />
       
