@@ -11,34 +11,10 @@ import Journal from './pi/PiNavigationScreens/Journal';
 import Login from './pi/Login';
 import Signup from './pi/Signup';
 import Logout from '@/components/Logout';
-import * as Notifications from 'expo-notifications'
 
 const Stack = createStackNavigator();
 
 export default function App() {
-  useEffect(() => {
-    async function configurePushNotifications() {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Failed to get push token for push notification!');
-        return;
-      }
-
-      // Schedule a notification every 24 hours (for testing, you can reduce this)
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Daily Update",
-          body: "This is a push notification from your app.",
-        },
-        trigger: {
-          seconds: 15,
-          //seconds: 24 * 60 * 60, // 24 hours
-          repeats: true,
-        },
-      });
-    }
-    configurePushNotifications();
-  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
