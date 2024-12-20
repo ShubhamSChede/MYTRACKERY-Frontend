@@ -34,12 +34,18 @@ const Create = () => {
       return;
     }
 
-    const expenseData = {
-      amount: parseFloat(amount),
-      category,
-      reason,
-      date: date.toISOString().split('T')[0],
-    };
+   // Fix for date handling with timezone adjustment
+   const selectedDate = new Date(date);
+   // Add the timezone offset to ensure correct date
+   const adjustedDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
+   const formattedDate = adjustedDate.toISOString().split('T')[0];
+
+   const expenseData = {
+    amount: parseFloat(amount),
+    category,
+    reason,
+    date: formattedDate,
+  };
 
     try {
       const token = await AsyncStorage.getItem('x-auth-token');
@@ -75,6 +81,14 @@ const Create = () => {
       Alert.alert('Error', 'Failed to add expense. Please try again. error : ');
     }
   };
+
+    // Function to format display date
+    const formatDisplayDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
 
   const handleCategorySelect = (selectedCategory) => {
     setCategory(selectedCategory);
@@ -130,25 +144,24 @@ const Create = () => {
           className="border border-gray-700 rounded-lg p-4 mb-4 w-full bg-gray-900 text-white"
         />
 
-        {/* Date Selection */}
-        <TouchableOpacity
-          onPress={() => setShowDatePicker(true)}
-          className="border border-gray-700 rounded-lg p-4 mb-6 w-full bg-gray-900"
-        >
-          <Text className="text-gray-400">
-            {date.toISOString().split('T')[0]}
-          </Text>
-        </TouchableOpacity>
+      {/* Date Selection */}
+      <TouchableOpacity
+        onPress={() => setShowDatePicker(true)}
+        className="border border-gray-700 rounded-lg p-4 mb-6 w-full bg-gray-900"
+      >
+        <Text className="text-gray-400">
+          {formatDisplayDate(date)}
+        </Text>
+      </TouchableOpacity>
 
-        {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={onDateChange}
-            // Note: DateTimePicker styling is platform-specific
-          />
-        )}
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={onDateChange}
+        />
+      )}
 
         {/* Add Expense Button */}
         <TouchableOpacity

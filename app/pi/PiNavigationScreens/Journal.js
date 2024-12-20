@@ -485,7 +485,7 @@ const Journal = () => {
       </View>
 
       <TouchableOpacity
-        className="bg-blue-600 p-4 rounded-md mb-6"
+        className="bg-gray-800 p-4 rounded-md mb-6"
         onPress={handleSubmit}
       >
         <Text className="text-white text-center font-bold text-lg">
@@ -635,7 +635,7 @@ const Journal = () => {
               <View className="flex-1 justify-center items-center">
                 <Text className="text-gray-400 text-lg mb-4">No journal entry for this month</Text>
                 <TouchableOpacity
-                  className="bg-blue-600 px-6 py-3 rounded-md"
+                  className="bg-gray-800 px-6 py-3 rounded-md"
                   onPress={() => setEditing(true)}
                 >
                   <Text className="text-white font-bold">Create Entry</Text>

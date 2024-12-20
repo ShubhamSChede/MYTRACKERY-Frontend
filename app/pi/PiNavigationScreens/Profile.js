@@ -211,14 +211,37 @@ export class Profile extends Component {
       );
     }
 
-    if (error) {
-      return (
-        <StyledView className="flex-1 justify-center items-center">
-          <StyledText className="text-red-500">{error}</StyledText>
-        </StyledView>
-      );
-    }
+ // Show header with logout even when there's no data
+ const headerSection = (
+  <StyledView className="flex-row justify-between items-center mb-6">
+    <StyledView>
+      <StyledText className="text-2xl font-bold text-white">
+        Welcome, {data?.user?.username || 'User'} 👋🏻
+      </StyledText>
+      <StyledText className="text-gray-400 mt-1">
+        {data?.user?.email || ''}
+      </StyledText>
+    </StyledView>
+    <TouchableOpacity 
+      className="bg-red-500/20 px-4 py-2 rounded-lg" 
+      onPress={this.handleLogout}
+    >
+      <StyledText className="text-red-500">Logout</StyledText>
+    </TouchableOpacity>
+  </StyledView>
+);
 
+// If there's an error or no data, show a simplified view
+if (error || !data) {
+  return (
+    <ScrollView className="p-4 bg-black">
+      {headerSection}
+      <StyledView className="flex-1 justify-center items-center mt-10">
+        <StyledText className="text-gray-400 text-lg">No data available</StyledText>
+      </StyledView>
+    </ScrollView>
+  );
+}
     const monthlyExpenses = this.getMonthlyExpensesForYear();
     const yearlyExpenses = this.getYearlyExpenses();
     const pieChartData = this.getPieChartData();
@@ -226,18 +249,7 @@ export class Profile extends Component {
     return (
       <ScrollView className="p-4 bg-black">
         {/* Header Section */}
-        <StyledView className="flex-row justify-between items-center mb-6">
-          <StyledView>
-            <StyledText className="text-2xl font-bold text-white">Welcome, {data.user.username} 👋🏻</StyledText>
-            <StyledText className="text-gray-400 mt-1">{data.user.email}</StyledText>
-          </StyledView>
-          <TouchableOpacity 
-            className="bg-red-500/20 px-4 py-2 rounded-lg" 
-            onPress={this.handleLogout}
-          >
-            <StyledText className="text-red-500">Logout</StyledText>
-          </TouchableOpacity>
-        </StyledView>
+        {headerSection}
 
         {/* Export PDF Button */}
         <TouchableOpacity 
@@ -315,40 +327,42 @@ export class Profile extends Component {
           />
         </StyledView>
 
-        {/* Yearly Expenses Bar Chart */}
-        <StyledText className="text-lg font-bold mb-4 text-white">Yearly Expenses</StyledText>
+     {/* Yearly Expenses Bar Chart */}
+     <StyledText className="text-lg font-bold mb-4 text-white">Yearly Expenses</StyledText>
         <StyledView className="bg-gray-900 p-4 rounded-lg mb-6 border border-gray-800">
-          <BarChart
-            data={{
-              labels: yearlyExpenses.labels,
-              datasets: [{ data: yearlyExpenses.data }],
-            }}
-            width={screenWidth * 0.9}
-            height={180}
-            fromZero={true}
-            chartConfig={{
-              backgroundGradientFrom: '#1f2937',
-              backgroundGradientTo: '#1f2937',
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(129, 140, 248, ${opacity})`, // Indigo color
-              labelColor: () => '#9ca3af',
-              style: {
-                borderRadius: 16
-              },
-              propsForLabels: {
-                fontSize: 12,
-              },
-            }}
-            style={{
-              marginVertical: 5,
-              borderRadius: 15,
-            }}
-            showBarTops={false}
-            withInnerLines={true}
-            withVerticalLabels={true}
-            barPercentage={0.4}
-            yAxisLabel="₹"
-          />
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            <BarChart
+              data={{
+                labels: yearlyExpenses.labels,
+                datasets: [{ data: yearlyExpenses.data }],
+              }}
+              width={Math.max(screenWidth * 0.9, yearlyExpenses.labels.length * 50)}
+              height={180}
+              fromZero={true}
+              chartConfig={{
+                backgroundGradientFrom: '#1f2937',
+                backgroundGradientTo: '#1f2937',
+                decimalPlaces: 0,
+                color: (opacity = 1) => `rgba(129, 140, 248, ${opacity})`,
+                labelColor: () => '#9ca3af',
+                style: {
+                  borderRadius: 16
+                },
+                propsForLabels: {
+                  fontSize: 12,
+                },
+              }}
+              style={{
+                marginVertical: 5,
+                borderRadius: 15,
+              }}
+              showBarTops={false}
+              withInnerLines={true}
+              withVerticalLabels={true}
+              barPercentage={0.4}
+              yAxisLabel="₹"
+            />
+          </ScrollView>
         </StyledView>
 
  {/* Monthly Expenses Circles */}
@@ -423,38 +437,40 @@ export class Profile extends Component {
 
         {/* Monthly Bar Chart */}
         <StyledView className="bg-gray-900 p-4 rounded-lg mb-6 border border-gray-800">
-          <BarChart
-            data={{
-              labels: monthlyExpenses.labels,
-              datasets: [{ data: monthlyExpenses.data }],
-            }}
-            width={screenWidth * 0.9}
-            height={180}
-            fromZero={true}
-            chartConfig={{
-              backgroundGradientFrom: '#1f2937',
-              backgroundGradientTo: '#1f2937',
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
-              labelColor: () => '#9ca3af',
-              style: {
-                borderRadius: 16
-              },
-            }}
-            style={{
-              marginVertical: 5,
-              borderRadius: 15,
-            }}
-            showBarTops={false}
-            withInnerLines={true}
-            withVerticalLabels={true}
-            barPercentage={0.1}
-            yAxisLabel="₹"
-          />
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+            <BarChart
+              data={{
+                labels: monthlyExpenses.labels,
+                datasets: [{ data: monthlyExpenses.data }],
+              }}
+              width={Math.max(screenWidth * 0.9, monthlyExpenses.labels.length * 40)}
+              height={180}
+              fromZero={true}
+              chartConfig={{
+                backgroundGradientFrom: '#1f2937',
+                backgroundGradientTo: '#1f2937',
+                decimalPlaces: 0,
+                color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+                labelColor: () => '#9ca3af',
+                style: {
+                  borderRadius: 16
+                },
+              }}
+              style={{
+                marginVertical: 5,
+                borderRadius: 15,
+              }}
+              showBarTops={false}
+              withInnerLines={true}
+              withVerticalLabels={true}
+              barPercentage={0.1}
+              yAxisLabel="₹"
+            />
+          </ScrollView>
         </StyledView>
 
-        {/* Recent Expenses */}
-        <StyledText className="text-lg font-bold mb-4 text-white">Recent Expenses</StyledText>
+  {/* Recent Expenses */}
+  <StyledText className="text-lg font-bold mb-4 text-white">Recent Expenses</StyledText>
         {data.recentExpenses.map((expense) => (
           <TouchableOpacity
             key={expense._id}
@@ -464,7 +480,12 @@ export class Profile extends Component {
             <StyledView className="flex-row justify-between items-center">
               <StyledText className="text-green-400 font-bold">₹{expense.amount}</StyledText>
               <StyledText className="text-white">{expense.category}</StyledText>
-              <StyledText className="text-gray-400">{new Date(expense.date).toLocaleDateString()}</StyledText>
+              <StyledText className="text-gray-400">
+                {(() => {
+                  const [year, month, day] = expense.date.split('T')[0].split('-');
+                  return `${day}-${month}-${year}`;
+                })()}
+              </StyledText>
             </StyledView>
             {expandedExpenseIds.includes(expense._id) && (
               <StyledText className="text-gray-400 mt-2 p-2 bg-gray-800/50 rounded-lg">
