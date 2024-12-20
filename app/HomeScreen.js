@@ -1,4 +1,4 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image ,  Linking } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -17,6 +17,12 @@ const HomeScreen = ({ navigation }) => {
     checkLoginStatus();
   }, []);
 
+  const openLinkedInProfile = () => {
+    Linking.openURL(
+      'https://www.linkedin.com/in/shubham-chede-2957bb278'
+    );
+  };
+
   return (
     <View className="flex-1 bg-black p-7">
       <WelcomePopup 
@@ -25,12 +31,12 @@ const HomeScreen = ({ navigation }) => {
       />
       
       <Image
-        source={require('../assets/images/coverpage.jpeg')}
+        source={require('../assets/images/apphome.jpeg')}
         className="h-1/2 w-full object-cover"
       />
       
       <View className="flex-1 justify-center items-center bg-black">
-        <Text className="text-5xl font-bold text-white mb-2">TRACKNEST</Text>
+        <Text className="text-5xl font-bold text-white mb-2">MYTRACKERY</Text>
         
         <Text className="text-sm font-bold text-white">Finance and growth all in </Text>
         <Text className="text-sm font-bold mb-10 text-white">one place.</Text>
@@ -48,6 +54,14 @@ const HomeScreen = ({ navigation }) => {
         >
           <Text className="text-gray-400 text-base underline">View Features</Text>
         </TouchableOpacity>
+
+                {/* Clickable link */}
+                <TouchableOpacity onPress={openLinkedInProfile} className="mt-4">
+          <Text className="text-gray-400 text-sm underline">
+            Developed by Shubham Chede
+          </Text>
+        </TouchableOpacity>
+
       </View>
     </View>
   );

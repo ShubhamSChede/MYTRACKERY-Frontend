@@ -39,7 +39,7 @@ const WelcomePopup = ({ manualVisible, setManualVisible }) => {
       <View className="flex-1 bg-black/80 justify-center items-center p-5">
         <View className="bg-gray-900 rounded-lg p-6 w-full max-h-5/6">
           <ScrollView>
-            <Text className="text-white text-2xl font-bold mb-4 text-center">Welcome to TRACKNEST!</Text>
+            <Text className="text-white text-2xl font-bold mb-4 text-center">Welcome to MYTRACKERY!</Text>
             
             <Text className="text-white text-base mb-4">
               Take charge of your finances and personal growth with these amazing features:
