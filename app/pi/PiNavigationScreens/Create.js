@@ -49,6 +49,8 @@ const Create = () => {
         return;
       }
 
+    console.log('Sending expense data:', expenseData);  // Debug log
+
       const response = await fetch('https://expensetrackerbackend-j2tz.onrender.com/api/expenses', {
         method: 'POST',
         headers: {
@@ -58,15 +60,19 @@ const Create = () => {
         body: JSON.stringify(expenseData),
       });
 
+      const responseData = await response.json();  // Get response data
+      console.log('Server response:', responseData);  // Debug log
+  
+
       if (!response.ok) {
         throw new Error('Failed to add expense');
       }
 
       Alert.alert('Success', 'Expense added successfully!');
-      router.push('/pi/PiNavigation');
+      router.back();    
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Failed to add expense. Please try again.');
+      Alert.alert('Error', 'Failed to add expense. Please try again. error : ');
     }
   };
 
@@ -86,7 +92,7 @@ const Create = () => {
 
       {/* Back Icon */}
       <TouchableOpacity 
-        onPress={() => router.push('/pi/PiNavigation')} 
+        onPress={() => router.push('/pi/PiNavigation')}  
         className="absolute top-4 left-4 bg-gray-900/50 p-2 rounded-full"
       >
         <Icon name="arrow-back" size={24} color="white" />
@@ -146,7 +152,8 @@ const Create = () => {
 
         {/* Add Expense Button */}
         <TouchableOpacity
-          onPress={handleAddExpense}
+           //onPress={() => router.back()}
+           onPress={handleAddExpense}
           className="bg-gray-900 mb-5 p-4 rounded-lg w-full"
         >
           <Text className="text-white text-center font-bold">Add Expense</Text>

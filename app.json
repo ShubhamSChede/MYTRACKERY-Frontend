@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "Ebando",
-    "slug": "Ebando",
+    "name": "TRACKNEST",
+    "slug": "TRACKNEST",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/adaptive-icon.png",
+    "icon": "./assets/images/applogo.jpeg",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/spend.png",
+      "image": "./assets/images/applogo.jpeg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/applogo.jpeg",
         "backgroundColor": "#ffffff"
       },
       "package": "com.ssc15.Ebando"
@@ -25,7 +25,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/spend.png"
+      "favicon": "./assets/images/applogo.jpeg"
     },
     "plugins": [
       "expo-router",

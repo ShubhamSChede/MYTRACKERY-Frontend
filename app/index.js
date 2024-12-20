@@ -42,7 +42,7 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-    <NavigationContainer independent={true}>
+    <NavigationContainer >
       <Stack.Navigator initialRouteName="HomeScreen" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="HomeScreen" component={HomeScreen}/>
         <Stack.Screen name="Login" component={Login} />

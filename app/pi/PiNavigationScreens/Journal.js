@@ -12,7 +12,7 @@ import {
 import Slider from '@react-native-community/slider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LineChart } from 'react-native-chart-kit';
-import { X, Plus, PencilLine, Calendar, Trash } from 'lucide-react-native';
+import { X, Plus, PencilLine, Calendar, Trash, ChevronLeft, ChevronRight } from 'lucide-react-native';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -22,6 +22,8 @@ const Journal = () => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [editing, setEditing] = useState(false);
   const [yearData, setYearData] = useState({});
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [availableYears, setAvailableYears] = useState([]);
   
   const [formData, setFormData] = useState({
     monthYear: '',
@@ -49,6 +51,25 @@ const Journal = () => {
     },
   };
 
+  // Add year navigation controls
+  const YearNavigation = () => (
+    <View className="flex-row items-center justify-center mb-4">
+      <TouchableOpacity 
+        onPress={() => setSelectedYear(prev => prev - 1)}
+        className="p-2"
+      >
+        <ChevronLeft color="#ffffff" size={24} />
+      </TouchableOpacity>
+      <Text className="text-white text-xl font-bold mx-4">{selectedYear}</Text>
+      <TouchableOpacity 
+        onPress={() => setSelectedYear(prev => prev + 1)}
+        className="p-2"
+      >
+        <ChevronRight color="#ffffff" size={24} />
+      </TouchableOpacity>
+    </View>
+  );
+
   // Validation functions
   const validateMonthYear = (value) => {
     const regex = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -57,7 +78,7 @@ const Journal = () => {
     }
     const currentYear = new Date().getFullYear();
     const year = parseInt(value.split('-')[0]);
-    return year >= 2000 && year <= currentYear + 1;
+    return year >= 2000 ;
   };
 
   const validateForm = () => {
@@ -104,8 +125,14 @@ const Journal = () => {
   };
 
   const organizeDataByYear = (data) => {
+
+    console.log('Raw data:', data); // Log raw data
+
     const organized = data.reduce((acc, journal) => {
       const [year, month] = journal.monthYear.split('-');
+
+      console.log('Processing entry:', year, month);
+
       if (!acc[year]) {
         acc[year] = {
           months: {},
@@ -141,6 +168,39 @@ const Journal = () => {
       
       return acc;
     }, {});
+
+     // Update available years
+     const years = Object.keys(organized).sort((a, b) => b - a);
+     setAvailableYears(years);
+
+        // If no data exists for selected year, create empty structure
+    if (!organized[selectedYear]) {
+      organized[selectedYear] = {
+        months: {},
+        chartData: {
+          labels: Array(12).fill('').map((_, i) => getMonthName(i + 1)),
+          datasets: [
+            {
+              data: Array(12).fill(0),
+              color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`,
+              strokeWidth: 2,
+            },
+            {
+              data: Array(12).fill(0),
+              color: (opacity = 1) => `rgba(54, 162, 235, ${opacity})`,
+              strokeWidth: 2,
+            },
+            {
+              data: Array(12).fill(0),
+              color: (opacity = 1) => `rgba(75, 192, 192, ${opacity})`,
+              strokeWidth: 2,
+            },
+          ],
+          legend: ['Productivity', 'Health', 'Mood'],
+        },
+      };
+    }
+    console.log('Organized data:', organized); 
     setYearData(organized);
   };
 
@@ -436,14 +496,30 @@ const Journal = () => {
   );
 
   const renderMonthCard = (year, month) => {
-    const monthData = yearData[year]?.months[month];
+
+    console.log('yearData:', yearData);
+
+
+    //const monthData = yearData[year]?.months[month];
     const monthNumber = month.padStart(2, '0');
+    const monthData = yearData[year]?.months[monthNumber];
     const monthName = getMonthName(parseInt(month));
+
+    //console.log(`Checking ${year}-${monthNumber}:`, yearData[year]?.months[monthNumber]);
+
+      // Debug log to see what we're checking
+  console.log(`Looking up month data for ${year}-${monthNumber}:`, monthData);
     
+      // Determine the background color based on whether data exists
+  const bgColorClass = monthData 
+  ? "bg-green-800" // Green background for months with data
+  : "bg-gray-800"; // Original gray for months without data
+
+
     return (
       <TouchableOpacity
         key={`${year}-${month}`}
-        className="bg-gray-800 p-4 rounded-lg m-1 flex-1 min-w-[80px]"
+        className={`${bgColorClass} p-4 rounded-lg m-1 flex-1 min-w-[80px]`}
         onPress={() => {
           setSelectedMonth(`${year}-${monthNumber}`);
           if (monthData) {
@@ -464,6 +540,8 @@ const Journal = () => {
         }}
       >
         <Text className="text-white font-bold">{monthName}</Text>
+              {/* Add this temporarily to debug */}
+      <Text className="text-white text-xs">{`${year}-${monthNumber}`}</Text>
       </TouchableOpacity>
     );
   };
@@ -572,13 +650,30 @@ const Journal = () => {
 
   return (
     <ScrollView className="flex-1 bg-black p-4">
-      {Object.keys(yearData).sort().reverse().map(year => (
-        <View key={year} className="mb-6">
-          <Text className="text-white text-xl font-bold mb-4">{year}</Text>
-          
+    {/* Year Navigation */}
+    <View className="flex-row items-center justify-center mb-4">
+      <TouchableOpacity 
+        onPress={() => setSelectedYear(prev => prev - 1)}
+        className="p-2"
+      >
+        <ChevronLeft color="#ffffff" size={24} />
+      </TouchableOpacity>
+      <Text className="text-white text-xl font-bold mx-4">{selectedYear}</Text>
+      <TouchableOpacity 
+        onPress={() => setSelectedYear(prev => prev + 1)}
+        className="p-2"
+      >
+        <ChevronRight color="#ffffff" size={24} />
+      </TouchableOpacity>
+    </View>
+
+    {/* Year Data Display */}
+    <View>
+      {yearData[selectedYear] ? (
+        <View className="mb-6">
           <View className="mb-4">
             <LineChart
-              data={yearData[year].chartData}
+              data={yearData[selectedYear].chartData}
               width={screenWidth - 32}
               height={220}
               chartConfig={chartConfig}
@@ -587,19 +682,30 @@ const Journal = () => {
                 marginVertical: 8,
                 borderRadius: 16,
               }}
-              legend={yearData[year].chartData.legend}
+              legend={yearData[selectedYear].chartData.legend}
             />
           </View>
 
           <View className="flex-row flex-wrap justify-between">
             {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(month => 
-              renderMonthCard(year, month)
+              renderMonthCard(selectedYear.toString(), month)
             )}
           </View>
         </View>
-      ))}
-    </ScrollView>
-  );
+      ) : (
+        <View className="flex-1 items-center justify-center py-8">
+          <Text className="text-gray-400 text-lg mb-4">No entries for {selectedYear}</Text>
+          <Text className="text-gray-500 text-center mb-6">Click on any month below to start adding entries</Text>
+          <View className="flex-row flex-wrap justify-between">
+            {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(month => 
+              renderMonthCard(selectedYear.toString(), month)
+            )}
+          </View>
+        </View>
+      )}
+    </View>
+  </ScrollView>
+);
 };
 
 export default Journal;

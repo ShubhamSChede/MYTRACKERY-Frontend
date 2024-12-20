@@ -1,25 +1,32 @@
 import { View, Text, Image } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import WelcomePopup from './WelcomePopup';
 
 const HomeScreen = ({ navigation }) => {
+  const [manualPopupVisible, setManualPopupVisible] = useState(false);
+
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await AsyncStorage.getItem('x-auth-token');
       if (token) {
-        navigation.replace('PiNavigation'); // Navigate directly to PiNavigation if token exists
+        navigation.replace('PiNavigation');
       }
     };
     checkLoginStatus();
   }, []);
 
   return (
-   
-    <View className="flex-1 bg-black p-7 ">
+    <View className="flex-1 bg-black p-7">
+      <WelcomePopup 
+        manualVisible={manualPopupVisible} 
+        setManualVisible={setManualPopupVisible} 
+      />
+      
       <Image
-        source={require('../assets/images/10478138.png')}
-        className="h-1/2 w-full object-cover "
+        source={require('../assets/images/coverpage.jpeg')}
+        className="h-1/2 w-full object-cover"
       />
       
       <View className="flex-1 justify-center items-center bg-black">
@@ -30,9 +37,16 @@ const HomeScreen = ({ navigation }) => {
        
         <TouchableOpacity
           onPress={() => navigation.navigate('Login')}
-          className="bg-gray-800 px-6 py-3 rounded-md"
+          className="bg-gray-800 px-6 py-3 rounded-md mb-4"
         >
           <Text className="text-white text-lg font-semibold">GET STARTED</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setManualPopupVisible(true)}
+          className="mt-2"
+        >
+          <Text className="text-gray-400 text-base underline">View Features</Text>
         </TouchableOpacity>
       </View>
     </View>

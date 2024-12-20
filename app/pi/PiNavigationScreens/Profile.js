@@ -351,33 +351,75 @@ export class Profile extends Component {
           />
         </StyledView>
 
-        {/* Monthly Expenses Circles */}
-        <StyledText className="text-lg font-bold mb-4 text-white">Monthly Expenses</StyledText>
-        <StyledView className="bg-gray-900 p-4 rounded-lg mb-6 border border-gray-800">
-          <StyledView className="flex-row flex-wrap justify-between">
-            {monthlyExpenses.labels.map((month, index) => (
-              <StyledView 
-                key={month} 
-                className={`w-[30%] aspect-square mb-4 rounded-full 
-                  ${monthlyExpenses.data[index] > 0 ? 'bg-blue-500/20' : 'bg-gray-800'} 
-                  justify-center items-center border-2 
-                  ${monthlyExpenses.data[index] > 0 ? 'border-blue-500/50' : 'border-gray-700'}`}
-              >
-                <StyledText className="text-white font-bold">{month}</StyledText>
-                {monthlyExpenses.data[index] > 0 ? (
-                  <>
-                    <StyledText className="text-blue-400 font-bold">
-                      ₹{monthlyExpenses.data[index]}
-                    </StyledText>
-                    <StyledText className="text-gray-400 text-xs">spent</StyledText>
-                  </>
-                ) : (
-                  <StyledText className="text-gray-500 text-xs">No expenses</StyledText>
-                )}
-              </StyledView>
-            ))}
+ {/* Monthly Expenses Circles */}
+<StyledView>
+  <StyledText className="text-lg font-bold mb-4 text-white">Monthly Expenses</StyledText>
+  <StyledView className="bg-gray-900/50 p-4 rounded-2xl mb-4 border border-gray-800">
+    <StyledView className="flex-row flex-wrap justify-between gap-2">
+      {monthlyExpenses.labels.map((month, index) => {
+        // Determine color based on expense amount
+        const amount = monthlyExpenses.data[index];
+        let bgColor = 'bg-gray-800/50';
+        let borderColor = 'border-gray-700/50';
+        let textColor = 'text-gray-400';
+        
+        if (amount > 0) {
+          if (amount < 12000) {
+            bgColor = 'bg-green-500/20';
+            borderColor = 'border-green-500/50';
+            textColor = 'text-green-400';
+          } else if (amount <= 15000) {
+            bgColor = 'bg-yellow-500/20';
+            borderColor = 'border-yellow-500/50';
+            textColor = 'text-yellow-400';
+          } else {
+            bgColor = 'bg-red-500/20';
+            borderColor = 'border-red-500/50';
+            textColor = 'text-red-400';
+          }
+        }
+
+        return (
+          <StyledView 
+            key={month} 
+            className={`w-[30%] py-3 mb-2 rounded-2xl 
+              ${bgColor} justify-center items-center border ${borderColor}`}
+          >
+            <StyledText className="text-white font-bold text-base">{month}</StyledText>
+            {amount > 0 ? (
+              <>
+                <StyledText className={`${textColor} font-bold text-sm`}>
+                  ₹{amount}
+                </StyledText>
+                <StyledText className="text-gray-400 text-xs">spent</StyledText>
+              </>
+            ) : (
+              <StyledText className="text-gray-500/70 text-xs">No expenses</StyledText>
+            )}
           </StyledView>
-        </StyledView>
+        )
+      })}
+    </StyledView>
+
+    {/* Color Legend */}
+    <StyledView className="border-t border-gray-800/50">
+      <StyledText className="text-white font-bold mt-3 mb-2">Expense Ranges:</StyledText>
+      <StyledView className="flex-row items-center mb-1.5">
+        <StyledView className="w-2.5 h-2.5 rounded-full bg-green-500/20 border border-green-500/50 mr-2" />
+        <StyledText className="text-gray-400">Below ₹12,000 - Good spending</StyledText>
+      </StyledView>
+      <StyledView className="flex-row items-center mb-1.5">
+        <StyledView className="w-2.5 h-2.5 rounded-full bg-yellow-500/20 border border-yellow-500/50 mr-2" />
+        <StyledText className="text-gray-400">₹12,000 - ₹15,000 - Moderate spending</StyledText>
+      </StyledView>
+      <StyledView className="flex-row items-center">
+        <StyledView className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50 mr-2" />
+        <StyledText className="text-gray-400">Above ₹15,000 - High spending</StyledText>
+      </StyledView>
+    </StyledView>
+  </StyledView>
+</StyledView>
+
 
         {/* Monthly Bar Chart */}
         <StyledView className="bg-gray-900 p-4 rounded-lg mb-6 border border-gray-800">
