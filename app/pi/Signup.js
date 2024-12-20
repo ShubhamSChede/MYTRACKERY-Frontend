@@ -1,15 +1,23 @@
-import { View, Text, Image, TextInput, Alert } from 'react-native';
+import { View, Text, Image, TextInput, Alert, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { Eye, EyeOff } from 'lucide-react-native';
 
 const Signup = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignup = async () => {
+    if (!username || !email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await fetch('https://expensetrackerbackend-j2tz.onrender.com/api/auth/signin', {
+      const response = await fetch('https://expensetrackerbackend-j2tz.onrender.com/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -19,66 +27,80 @@ const Signup = ({ navigation }) => {
 
       const data = await response.json();
       if (response.ok) {
-        // Handle successful signup, e.g., navigate to the login screen
         Alert.alert('Signup Successful', 'You can now log in!');
         navigation.navigate('Login');
       } else {
-        // Handle error
         Alert.alert('Signup Failed', data.message || 'An error occurred. Please try again.');
       }
     } catch (error) {
+      console.error('Signup error:', error);
       Alert.alert('Network Error', 'Please check your internet connection.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View className="flex-1 bg-black p-7">
       <Image
-        source={require('../../assets/images/4860253.jpg')} // Adjust the path as needed
-        className="h-1/3 w-full object-cover" // 30% of the height
+        source={require('../../assets/images/4860253.jpg')}
+        className="w-full h-1/3 object-cover"
       />
       
-      <View className="flex-1 justify-center items-center bg-black p-4">
+      <View className="mt-10 justify-center items-center bg-black p-2">
         <Text className="text-2xl font-bold mb-4 text-white">CREATE ACCOUNT</Text>
 
-        {/* Username Input */}
         <TextInput
           value={username}
           onChangeText={setUsername}
           placeholder="Username"
-           placeholderTextColor="#9ca3af"
+          placeholderTextColor="#9ca3af"
           className="border border-gray-900 bg-gray-800 rounded-md w-full p-2 mb-4 text-white placeholder:text-white"
+          autoCapitalize="none"
         />
 
-        {/* Email Input */}
         <TextInput
           value={email}
           onChangeText={setEmail}
           placeholder="Email"
-           placeholderTextColor="#9ca3af"
+          placeholderTextColor="#9ca3af"
           keyboardType="email-address"
           className="border border-gray-900 bg-gray-800 rounded-md w-full p-2 mb-4 text-white placeholder:text-white"
+          autoCapitalize="none"
         />
 
-        {/* Password Input */}
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Password"
-           placeholderTextColor="#9ca3af"
-          secureTextEntry
-          className="border border-gray-900 bg-gray-800 rounded-md w-full p-2 mb-4 text-white placeholder:text-white"
-        />
+        <View className="w-full relative">
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password"
+            placeholderTextColor="#9ca3af"
+            secureTextEntry={!showPassword}
+            className="border border-gray-900 bg-gray-800 rounded-md w-full p-2 mb-4 text-white placeholder:text-white pr-12"
+            autoCapitalize="none"
+          />
+          <TouchableOpacity 
+            onPress={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-2.5"
+          >
+            {showPassword ? (
+              <Eye size={24} color="#9ca3af" />
+            ) : (
+              <EyeOff size={24} color="#9ca3af" />
+            )}
+          </TouchableOpacity>
+        </View>
 
-        {/* Signup Button */}
         <TouchableOpacity
           onPress={handleSignup}
-          className="bg-gray-800 px-6 py-3 rounded-md w-full mb-2"
+          disabled={loading}
+          className={`bg-gray-800 px-10 py-3 rounded-md w-full mb-2 ${loading ? 'opacity-50' : ''}`}
         >
-          <Text className="text-white text-lg font-semibold text-center">SIGNUP</Text>
+          <Text className="text-white text-lg font-semibold text-center">
+            {loading ? 'SIGNING UP...' : 'SIGNUP'}
+          </Text>
         </TouchableOpacity>
 
-        {/* Already Registered Button */}
         <TouchableOpacity
           onPress={() => navigation.navigate('Login')}
           className="mb-2"
