@@ -469,18 +469,18 @@ if (error || !data) {
           </ScrollView>
         </StyledView>
 
-  {/* Recent Expenses */}
-  <StyledText className="text-lg font-bold mb-4 text-white">Recent Expenses</StyledText>
+       {/* Recent Expenses */}
+       <StyledText className="text-lg font-bold mb-4 text-white">Recent Expenses</StyledText>
         {data.recentExpenses.map((expense) => (
           <TouchableOpacity
             key={expense._id}
             onPress={() => this.toggleExpand(expense._id)}
             className="bg-gray-900 mb-3 rounded-lg p-4 border border-gray-800"
           >
-            <StyledView className="flex-row justify-between items-center">
-              <StyledText className="text-green-400 font-bold">₹{expense.amount}</StyledText>
-              <StyledText className="text-white">{expense.category}</StyledText>
-              <StyledText className="text-gray-400">
+            <StyledView className="flex-row items-center space-x-2">
+              <StyledText className="text-green-400 font-bold flex-1">₹{expense.amount}</StyledText>
+              <StyledText className="text-white flex-1 text-center">{expense.category}</StyledText>
+              <StyledText className="text-gray-400 flex-1 text-right">
                 {(() => {
                   const [year, month, day] = expense.date.split('T')[0].split('-');
                   return `${day}-${month}-${year}`;
