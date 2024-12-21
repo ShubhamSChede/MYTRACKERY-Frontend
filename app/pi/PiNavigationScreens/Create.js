@@ -106,7 +106,7 @@ const Create = () => {
 
       {/* Back Icon */}
       <TouchableOpacity 
-        onPress={() => router.push('/pi/PiNavigation')}  
+        onPress={() => router.back()}  
         className="absolute top-4 left-4 bg-gray-900/50 p-2 rounded-full"
       >
         <Icon name="arrow-back" size={24} color="white" />
