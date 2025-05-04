@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plus, BookOpen, BarChart2, Clipboard, LogOut, ArrowRight } from 'lucide-react-native';
-import { LineChart } from 'react-native-chart-kit';
+import { Plus, BookOpen, BarChart2, Clipboard, LogOut, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
 import { FadeIn, SlideUp } from './AnimationUtils';
 import { useNavigation } from '@react-navigation/native';
@@ -15,15 +15,27 @@ const Dashboard = () => {
   const router = useRouter();
   const navigation = useNavigation();
   const [userData, setUserData] = useState(null);
+  const [expenses, setExpenses] = useState([]); // Add this line
   const [monthlyExpensesData, setMonthlyExpensesData] = useState({ labels: [], data: [] });
   const [todayExpenses, setTodayExpenses] = useState(0);
   const [loading, setLoading] = useState(true);
   const [journalHighlight, setJournalHighlight] = useState(null);
   const [recentExpenses, setRecentExpenses] = useState([]);
+  const [selectedMonthYear, setSelectedMonthYear] = useState({
+    month: new Date().getMonth(),
+    year: new Date().getFullYear()
+  });
+  const [categoryBreakdown, setCategoryBreakdown] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    if (expenses && expenses.length > 0) {
+      processExpensesData(expenses);
+    }
+  }, [selectedMonthYear, expenses]);
 
   const fetchDashboardData = async () => {
     try {
@@ -70,6 +82,7 @@ const Dashboard = () => {
       }
 
       const expensesData = await expensesResponse.json();
+      setExpenses(expensesData); // Store expenses in state
       processExpensesData(expensesData);
       
       // Fetch journal entries to get the latest
@@ -105,19 +118,21 @@ const Dashboard = () => {
     const today = new Date();
     const todayString = formatDate(today);
     
-    // Get current month & year
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
+    // Use selected month & year instead of current
+    const { month: currentMonth, year: currentYear } = selectedMonthYear;
     
     // Calculate today's total expenses
     let todayTotal = 0;
     let recentExpList = [];
     
-    // Create an array for each day of the current month (1-indexed days)
+    // Create an array for each day of the selected month (1-indexed days)
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const dailyExpenses = Array(daysInMonth).fill(0);
     
-    // Group expenses by day for current month and calculate today's expenses
+    // For category breakdown
+    const categories = {};
+    
+    // Group expenses by day for selected month and calculate today's expenses
     expenses.forEach(expense => {
       const expenseDate = new Date(expense.date);
       const expenseDateString = formatDate(expenseDate);
@@ -127,10 +142,18 @@ const Dashboard = () => {
         todayTotal += expense.amount;
       }
       
-      // Check if expense is from current month for the chart
+      // Check if expense is from selected month for the chart
       if (expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear) {
         const day = expenseDate.getDate();
         dailyExpenses[day - 1] += expense.amount;
+        
+        // Add to category breakdown
+        const category = expense.category;
+        if (categories[category]) {
+          categories[category] += expense.amount;
+        } else {
+          categories[category] = expense.amount;
+        }
       }
     });
     
@@ -149,9 +172,72 @@ const Dashboard = () => {
       }
     }
     
+    // Process category data for pie chart
+    const categoryData = processCategoryData(categories);
+    
     setTodayExpenses(todayTotal);
     setMonthlyExpensesData({ labels, data: dailyExpenses });
     setRecentExpenses(recentExpList);
+    setCategoryBreakdown(categoryData);
+  };
+
+  const processCategoryData = (categories) => {
+    const colors = [
+      '#A8DADC', // Powder Blue
+      '#457B9D', // Desaturated Blue
+      '#F4A261', // Soft Orange
+      '#E76F51', // Soft Red
+      '#2A9D8F', // Teal
+      '#E9C46A', // Pale Yellow
+      '#B5838D', // Dusty Pink
+      '#81B29A', // Soft Green
+      '#A3A1F7', // Light Lavender
+      '#FFB4A2', // Light Coral
+      '#6D6875', // Muted Purple
+      '#CF9F7D', // Light Brown
+    ];
+
+    const totalAmount = Object.values(categories).reduce((sum, amount) => sum + amount, 0);
+    
+    return Object.entries(categories)
+      .map(([category, amount], index) => ({
+        name: category,
+        amount,
+        percentage: ((amount / totalAmount) * 100).toFixed(1),
+        color: colors[index % colors.length],
+        legendFontColor: '#666666',
+        legendFontSize: 12
+      }))
+      .sort((a, b) => b.amount - a.amount);
+  };
+
+  const changeMonth = (direction) => {
+    const { month, year } = selectedMonthYear;
+    let newMonth = month;
+    let newYear = year;
+    
+    if (direction === 'prev') {
+      newMonth = month - 1;
+      if (newMonth < 0) {
+        newMonth = 11;
+        newYear = year - 1;
+      }
+    } else {
+      newMonth = month + 1;
+      if (newMonth > 11) {
+        newMonth = 0;
+        newYear = year + 1;
+      }
+    }
+    
+    // Don't allow future months
+    const currentDate = new Date();
+    if (newYear > currentDate.getFullYear() || 
+        (newYear === currentDate.getFullYear() && newMonth > currentDate.getMonth())) {
+      return;
+    }
+    
+    setSelectedMonthYear({ month: newMonth, year: newYear });
   };
 
   const findLatestJournal = (journals) => {
@@ -308,10 +394,29 @@ const Dashboard = () => {
       
       {/* Monthly Expenses Chart */}
       <SlideUp delay={300}>
-        <View className="mx-4  mb-6 p-4 bg-white rounded-3xl shadow-md elevation-3 border border-[#8B4513]/10">
-          <Text className="text-[#8B4513] text-lg font-bold mb-3">
-            {getMonthName(new Date().getMonth())} Overview
-          </Text>
+        <View className="mx-4 mb-6 p-4 bg-white rounded-3xl shadow-md elevation-3 border border-[#8B4513]/10">
+          {/* Month Navigation */}
+          <View className="flex-row justify-between items-center mb-3">
+            <TouchableOpacity 
+              onPress={() => changeMonth('prev')}
+              className="p-1 bg-[#8B4513]/10 rounded"
+            >
+              <Text className="text-[#8B4513] px-2">◀</Text>
+            </TouchableOpacity>
+            
+            <Text className="text-[#8B4513] text-lg font-bold">
+              {getMonthName(selectedMonthYear.month)} {selectedMonthYear.year}
+            </Text>
+            
+            <TouchableOpacity 
+              onPress={() => changeMonth('next')}
+              className="p-1 bg-[#8B4513]/10 rounded"
+            >
+              <Text className="text-[#8B4513] px-2">▶</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {/* Daily Expenses Line Chart */}
           {monthlyExpensesData.data.some(amount => amount > 0) ? (
             <LineChart
               data={{
@@ -353,11 +458,61 @@ const Dashboard = () => {
               <Text className="text-gray-400">No expenses recorded this month</Text>
             </View>
           )}
+          
+          {/* Category Breakdown Section */}
+          {categoryBreakdown.length > 0 && (
+            <View className="mt-4 pt-4 border-t border-gray-200">
+              <Text className="text-[#8B4513] font-bold mb-3">Category Breakdown</Text>
+              
+              {/* Pie Chart */}
+              <View className="flex-row justify-center mb-2">
+                <PieChart
+                  data={categoryBreakdown}
+                  width={screenWidth * 0.7}
+                  height={140}
+                  chartConfig={{
+                    color: (opacity = 1) => `rgba(139, 69, 19, ${opacity})`,
+                  }}
+                  accessor="amount"
+                  backgroundColor="transparent"
+                  paddingLeft="0"
+                  hasLegend={false}
+                  center={[screenWidth * 0.15, 0]}
+                  absolute={false}
+                />
+              </View>
+              
+              {/* Custom Legend */}
+              <View className="mt-2">
+                {categoryBreakdown.map((category, index) => (
+                  <View key={index} className="flex-row items-center justify-between mb-2">
+                    <View className="flex-row items-center flex-1">
+                      <View 
+                        style={{ backgroundColor: category.color }} 
+                        className="w-3 h-3 rounded-full mr-2"
+                      />
+                      <Text className="text-gray-700 flex-1" numberOfLines={1} ellipsizeMode="tail">
+                        {category.name}
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      <Text className="text-gray-700 mr-2">
+                        ₹{category.amount.toFixed(0)}
+                      </Text>
+                      <Text className="text-[#8B4513] font-bold w-12 text-right">
+                        {category.percentage}%
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
         </View>
       </SlideUp>
-      
+
       {/* Recent Expenses */}
-      <SlideUp delay={350}>
+      <SlideUp delay={400}>
         <View className="mx-4 mb-6 p-4 bg-white rounded-3xl shadow-md elevation-3 border border-[#8B4513]/10">
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-[#8B4513] text-lg font-bold">Recent Expenses</Text>
@@ -398,7 +553,7 @@ const Dashboard = () => {
       </SlideUp>
       
       {/* Journal Highlight */}
-      <SlideUp delay={400}>
+      <SlideUp delay={450}>
         <View className="mx-4 mb-8 p-4 bg-white rounded-3xl shadow-md elevation-3 border border-[#8B4513]/10">
           <View className="flex-row justify-between items-center mb-2">
             <Text className="text-[#8B4513] text-lg font-bold">Monthly Journal</Text>
