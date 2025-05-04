@@ -146,10 +146,7 @@ const Login = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
 
-            {/* Forgot Password Link */}
-            <TouchableOpacity className="mt-3 items-center">
-              <Text className="text-[#8B4513] text-sm">Forgot Password?</Text>
-            </TouchableOpacity>
+        
           </View>
         </SlideUp>
 

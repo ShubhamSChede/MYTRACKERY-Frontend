@@ -16,9 +16,11 @@ const WelcomePopup = ({ manualVisible, setManualVisible }) => {
   const checkFirstTime = async () => {
     try {
       const hasShown = await AsyncStorage.getItem('welcome-shown');
+      console.log("Welcome shown status:", hasShown); // Debug log
       if (!hasShown) {
         setAutoVisible(true);
-        await AsyncStorage.setItem('welcome-shown', 'true');
+        // Only set storage after they've seen the popup and closed it
+        // We'll do this in the handleClose function
       }
     } catch (error) {
       console.error('Error checking first time status:', error);
@@ -28,7 +30,17 @@ const WelcomePopup = ({ manualVisible, setManualVisible }) => {
   // Combine both automatic and manual visibility
   const isVisible = autoVisible || manualVisible;
 
-  const handleClose = () => {
+  const handleClose = async () => {
+    // Only store the flag when it's their first time (autoVisible is true)
+    if (autoVisible) {
+      try {
+        await AsyncStorage.setItem('welcome-shown', 'true');
+        console.log("Set welcome-shown to true"); // Debug log
+      } catch (error) {
+        console.error('Error saving welcome popup status:', error);
+      }
+    }
+    
     setAutoVisible(false);
     setManualVisible(false);
   };

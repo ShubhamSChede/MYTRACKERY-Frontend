@@ -78,7 +78,7 @@ const Create = () => {
       }
 
       Alert.alert('Success', 'Expense added successfully!');
-      router.back();    
+      navigation.navigate('Dashboard');  // Navigate to the dashboard after adding expense    
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Failed to add expense. Please try again.');
@@ -113,7 +113,7 @@ const Create = () => {
       {/* Header */}
       <View className="px-4 py-4 border-b border-gray-200 flex-row items-center">
         <TouchableOpacity 
-          onPress={() => navigation.navigate('Expenses')}
+          onPress={() => navigation.navigate('Dashboard')}
           className="p-2 rounded-full"
         >
           <ArrowLeft size={24} color="#8B4513" />

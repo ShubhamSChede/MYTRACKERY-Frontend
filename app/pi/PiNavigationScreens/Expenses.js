@@ -72,7 +72,7 @@ const Expenses = () => {
       const storedToken = await AsyncStorage.getItem('x-auth-token');
       if (!storedToken) {
         Alert.alert('Session Expired', 'Please login again');
-        router.replace('/login');
+        navigation.navigate('HomeScreen');
         return;
       }
       setToken(storedToken);
@@ -104,7 +104,7 @@ const Expenses = () => {
         if (response.status === 401) {
           await AsyncStorage.removeItem('x-auth-token');
           Alert.alert('Session Expired', 'Please login again');
-          router.replace('/');
+          navigation.navigate('HomeScreen');
           return;
         }
         throw new Error('Failed to fetch expenses');

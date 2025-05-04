@@ -9,6 +9,7 @@ import { Dimensions } from 'react-native';
 import { FadeIn, SlideUp } from './AnimationUtils';
 import { useNavigation } from '@react-navigation/native';
 
+
 const screenWidth = Dimensions.get('window').width;
 
 const Dashboard = () => {
@@ -269,7 +270,7 @@ const Dashboard = () => {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('x-auth-token');
-      router.replace('/login');
+      navigation.navigate('HomeScreen');
     } catch (error) {
       console.error('Error logging out:', error);
     }
