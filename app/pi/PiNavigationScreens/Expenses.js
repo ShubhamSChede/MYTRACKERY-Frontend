@@ -8,6 +8,7 @@ import {
   Calendar, DollarSign, X, ChevronLeft, ChevronRight, 
   RefreshCcw, Tag
 } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
@@ -44,6 +45,7 @@ const Expenses = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -77,7 +79,7 @@ const Expenses = () => {
     } catch (error) {
       console.error('Failed to retrieve token:', error);
       Alert.alert('Error', 'Failed to authenticate. Please login again.');
-      router.replace('/login');
+      router.replace('/');
     }
   };
 
@@ -102,7 +104,7 @@ const Expenses = () => {
         if (response.status === 401) {
           await AsyncStorage.removeItem('x-auth-token');
           Alert.alert('Session Expired', 'Please login again');
-          router.replace('/login');
+          router.replace('/');
           return;
         }
         throw new Error('Failed to fetch expenses');
@@ -393,7 +395,7 @@ const Expenses = () => {
               </TouchableOpacity>
               <TouchableOpacity
                 className="p-2 bg-[#8B4513] rounded-full"
-                onPress={() => router.push('/pi/PiNavigationScreens/Create')}
+                onPress={() => navigation.navigate('Create')}
               >
                 <Plus size={22} color="white" />
               </TouchableOpacity>

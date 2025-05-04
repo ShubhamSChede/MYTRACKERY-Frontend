@@ -7,6 +7,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { ArrowLeft, Calendar, Check, X } from 'lucide-react-native';
 import Button from '../../../components/Button';
 import Card from '../../../components/Card';
+import { useNavigation } from '@react-navigation/native';
 
 const categoriesList = [
   'Food', 'Groceries', 'Travel', 'Health', 'Leisure',
@@ -23,6 +24,7 @@ const Create = () => {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const navigation = useNavigation();
 
   const onDateChange = (event, selectedDate) => {
     setShowDatePicker(Platform.OS === 'ios'); 
@@ -111,7 +113,7 @@ const Create = () => {
       {/* Header */}
       <View className="px-4 py-4 border-b border-gray-200 flex-row items-center">
         <TouchableOpacity 
-          onPress={() => router.back()}  
+          onPress={() => navigation.navigate('Expenses')}
           className="p-2 rounded-full"
         >
           <ArrowLeft size={24} color="#8B4513" />
