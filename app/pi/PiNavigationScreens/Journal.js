@@ -1,3 +1,4 @@
+// app/pi/PiNavigationScreens/Journal.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,11 +9,24 @@ import {
   Alert,
   ActivityIndicator,
   Dimensions,
+  SafeAreaView,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LineChart } from 'react-native-chart-kit';
-import { X, Plus, PencilLine, Calendar, Trash, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { 
+  X, 
+  Plus, 
+  PencilLine, 
+  Calendar, 
+  Trash2, 
+  ChevronLeft, 
+  ChevronRight,
+  ArrowLeft
+} from 'lucide-react-native';
+import Card from '../../../components/Card';
+import Button from '../../../components/Button';
+import { FadeIn, SlideUp } from '../../../components/AnimationUtils';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -35,19 +49,19 @@ const Journal = () => {
   });
 
   const chartConfig = {
-    backgroundColor: '#1e1e1e',
-    backgroundGradientFrom: '#1e1e1e',
-    backgroundGradientTo: '#1e1e1e',
+    backgroundColor: '#ffffff',
+    backgroundGradientFrom: '#ffffff',
+    backgroundGradientTo: '#ffffff',
     decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+    color: (opacity = 1) => `rgba(139, 69, 19, ${opacity})`,
+    labelColor: (opacity = 1) => `rgba(139, 69, 19, ${opacity})`,
     style: {
       borderRadius: 16,
     },
     propsForDots: {
       r: '6',
       strokeWidth: '2',
-      stroke: '#ffa726',
+      stroke: '#8B4513',
     },
   };
 
@@ -56,21 +70,21 @@ const Journal = () => {
     <View className="flex-row items-center justify-center mb-4">
       <TouchableOpacity 
         onPress={() => setSelectedYear(prev => prev - 1)}
-        className="p-2"
+        className="p-2 bg-[#8B4513]/10 rounded-full"
       >
-        <ChevronLeft color="#ffffff" size={24} />
+        <ChevronLeft color="#8B4513" size={24} />
       </TouchableOpacity>
-      <Text className="text-white text-xl font-bold mx-4">{selectedYear}</Text>
+      <Text className="text-[#8B4513] text-xl font-bold mx-4">{selectedYear}</Text>
       <TouchableOpacity 
         onPress={() => setSelectedYear(prev => prev + 1)}
-        className="p-2"
+        className="p-2 bg-[#8B4513]/10 rounded-full"
       >
-        <ChevronRight color="#ffffff" size={24} />
+        <ChevronRight color="#8B4513" size={24} />
       </TouchableOpacity>
     </View>
   );
 
-  // Validation functions
+  // Validation functions remain the same
   const validateMonthYear = (value) => {
     const regex = /^\d{4}-(0[1-9]|1[0-2])$/;
     if (!regex.test(value)) {
@@ -100,7 +114,7 @@ const Journal = () => {
     return errors;
   };
 
-  // Fetch all journals
+  // Fetch all journals - code remains largely the same
   const fetchJournals = async () => {
     try {
       setLoading(true);
@@ -125,8 +139,7 @@ const Journal = () => {
   };
 
   const organizeDataByYear = (data) => {
-
-    console.log('Raw data:', data); // Log raw data
+    console.log('Raw data:', data);
 
     const organized = data.reduce((acc, journal) => {
       const [year, month] = journal.monthYear.split('-');
@@ -141,17 +154,17 @@ const Journal = () => {
             datasets: [
               {
                 data: Array(12).fill(0),
-                color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`,
+                color: (opacity = 1) => `rgba(139, 69, 19, ${opacity})`,
                 strokeWidth: 2,
               },
               {
                 data: Array(12).fill(0),
-                color: (opacity = 1) => `rgba(54, 162, 235, ${opacity})`,
+                color: (opacity = 1) => `rgba(210, 180, 140, ${opacity})`,
                 strokeWidth: 2,
               },
               {
                 data: Array(12).fill(0),
-                color: (opacity = 1) => `rgba(75, 192, 192, ${opacity})`,
+                color: (opacity = 1) => `rgba(165, 42, 42, ${opacity})`,
                 strokeWidth: 2,
               },
             ],
@@ -173,7 +186,7 @@ const Journal = () => {
      const years = Object.keys(organized).sort((a, b) => b - a);
      setAvailableYears(years);
 
-        // If no data exists for selected year, create empty structure
+     // If no data exists for selected year, create empty structure
     if (!organized[selectedYear]) {
       organized[selectedYear] = {
         months: {},
@@ -182,17 +195,17 @@ const Journal = () => {
           datasets: [
             {
               data: Array(12).fill(0),
-              color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`,
+              color: (opacity = 1) => `rgba(139, 69, 19, ${opacity})`,
               strokeWidth: 2,
             },
             {
               data: Array(12).fill(0),
-              color: (opacity = 1) => `rgba(54, 162, 235, ${opacity})`,
+              color: (opacity = 1) => `rgba(210, 180, 140, ${opacity})`,
               strokeWidth: 2,
             },
             {
               data: Array(12).fill(0),
-              color: (opacity = 1) => `rgba(75, 192, 192, ${opacity})`,
+              color: (opacity = 1) => `rgba(165, 42, 42, ${opacity})`,
               strokeWidth: 2,
             },
           ],
@@ -224,7 +237,6 @@ const Journal = () => {
         mood: formData.mood
       };
   
-  
       const response = await fetch('https://expensetrackerbackend-j2tz.onrender.com/api/journal', {
         method: 'POST',
         headers: {
@@ -236,7 +248,6 @@ const Journal = () => {
   
       const data = await response.json();
       
-  
       if (response.ok) {
         Alert.alert('Success', 'Journal created successfully');
         await fetchJournals();
@@ -350,176 +361,166 @@ const Journal = () => {
 
   const renderForm = () => (
     <ScrollView className="flex-1">
-      <View className="mb-4">
-        <Text className="text-white text-lg mb-2">Month Highlight</Text>
-        <TextInput
-          className="bg-gray-800 rounded-md p-3 text-white"
-          placeholder="What was the highlight of your month?"
-          placeholderTextColor="#9ca3af"
-          multiline
-          numberOfLines={3}
-          value={formData.monthHighlight}
-          onChangeText={(text) => setFormData({ ...formData, monthHighlight: text })}
+      <Card title="Monthly Journal Entry">
+        <View className="mb-4">
+          <Text className="text-gray-700 mb-2">Month Highlight</Text>
+          <TextInput
+            className="bg-gray-50 rounded-xl p-3 text-gray-800 border border-gray-200"
+            placeholder="What was the highlight of your month?"
+            placeholderTextColor="#9ca3af"
+            multiline
+            numberOfLines={3}
+            value={formData.monthHighlight}
+            onChangeText={(text) => setFormData({ ...formData, monthHighlight: text })}
+          />
+        </View>
+
+        <View className="mb-4">
+          <Text className="text-gray-700 mb-2">Skills Learnt</Text>
+          <TextInput
+            className="bg-gray-50 rounded-xl p-3 text-gray-800 border border-gray-200"
+            placeholder="What skills did you learn this month?"
+            placeholderTextColor="#9ca3af"
+            multiline
+            numberOfLines={3}
+            value={formData.skillsLearnt}
+            onChangeText={(text) => setFormData({ ...formData, skillsLearnt: text })}
+          />
+        </View>
+
+        {/* Productivity Section */}
+        <View className="mb-6">
+          <Text className="text-gray-700 mb-2 font-medium">Productivity</Text>
+          <View className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <Text className="text-[#8B4513] mb-2">Rating: {formData.productivity.rating}</Text>
+            <Slider
+              minimumValue={1}
+              maximumValue={10}
+              step={1}
+              value={formData.productivity.rating}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  productivity: { ...formData.productivity, rating: value },
+                })
+              }
+              minimumTrackTintColor="#8B4513"
+              maximumTrackTintColor="#D2B48C"
+              thumbTintColor="#8B4513"
+            />
+            <TextInput
+              className="mt-3 bg-white rounded-xl p-3 text-gray-800 border border-gray-200"
+              placeholder="Notes on productivity..."
+              placeholderTextColor="#9ca3af"
+              multiline
+              value={formData.productivity.note}
+              onChangeText={(text) =>
+                setFormData({
+                  ...formData,
+                  productivity: { ...formData.productivity, note: text },
+                })
+              }
+            />
+          </View>
+        </View>
+
+        {/* Health Section */}
+        <View className="mb-6">
+          <Text className="text-gray-700 mb-2 font-medium">Health</Text>
+          <View className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <Text className="text-[#8B4513] mb-2">Rating: {formData.health.rating}</Text>
+            <Slider
+              minimumValue={1}
+              maximumValue={10}
+              step={1}
+              value={formData.health.rating}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  health: { ...formData.health, rating: value },
+                })
+              }
+              minimumTrackTintColor="#8B4513"
+              maximumTrackTintColor="#D2B48C"
+              thumbTintColor="#8B4513"
+            />
+            <TextInput
+              className="mt-3 bg-white rounded-xl p-3 text-gray-800 border border-gray-200"
+              placeholder="Notes on health..."
+              placeholderTextColor="#9ca3af"
+              multiline
+              value={formData.health.note}
+              onChangeText={(text) =>
+                setFormData({
+                  ...formData,
+                  health: { ...formData.health, note: text },
+                })
+              }
+            />
+          </View>
+        </View>
+
+        {/* Mood Section */}
+        <View className="mb-6">
+          <Text className="text-gray-700 mb-2 font-medium">Mood</Text>
+          <View className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <Text className="text-[#8B4513] mb-2">Rating: {formData.mood.rating}</Text>
+            <Slider
+              minimumValue={1}
+              maximumValue={10}
+              step={1}
+              value={formData.mood.rating}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  mood: { ...formData.mood, rating: value },
+                })
+              }
+              minimumTrackTintColor="#8B4513"
+              maximumTrackTintColor="#D2B48C"
+              thumbTintColor="#8B4513"
+            />
+            <TextInput
+              className="mt-3 bg-white rounded-xl p-3 text-gray-800 border border-gray-200"
+              placeholder="Notes on mood..."
+              placeholderTextColor="#9ca3af"
+              multiline
+              value={formData.mood.note}
+              onChangeText={(text) =>
+                setFormData({
+                  ...formData,
+                  mood: { ...formData.mood, note: text },
+                })
+              }
+            />
+          </View>
+        </View>
+
+        <Button
+          title={editing ? "Update Journal" : "Create Journal"}
+          onPress={handleSubmit}
+          size="large"
         />
-      </View>
-
-      <View className="mb-4">
-        <Text className="text-white text-lg mb-2">Skills Learnt</Text>
-        <TextInput
-          className="bg-gray-800 rounded-md p-3 text-white"
-          placeholder="What skills did you learn this month?"
-          placeholderTextColor="#9ca3af"
-          multiline
-          numberOfLines={3}
-          value={formData.skillsLearnt}
-          onChangeText={(text) => setFormData({ ...formData, skillsLearnt: text })}
-        />
-      </View>
-
-      {/* Productivity Section */}
-      <View className="mb-6">
-        <Text className="text-white text-lg mb-2">Productivity</Text>
-        <View className="bg-gray-800 rounded-md p-4">
-          <Text className="text-white mb-2">Rating: {formData.productivity.rating}</Text>
-          <Slider
-            minimumValue={1}
-            maximumValue={10}
-            step={1}
-            value={formData.productivity.rating}
-            onValueChange={(value) =>
-              setFormData({
-                ...formData,
-                productivity: { ...formData.productivity, rating: value },
-              })
-            }
-            minimumTrackTintColor="#4ade80"
-            maximumTrackTintColor="#6b7280"
-            thumbTintColor="#4ade80"
-          />
-          <TextInput
-            className="mt-3 bg-gray-700 rounded-md p-3 text-white"
-            placeholder="Notes on productivity..."
-            placeholderTextColor="#9ca3af"
-            multiline
-            value={formData.productivity.note}
-            onChangeText={(text) =>
-              setFormData({
-                ...formData,
-                productivity: { ...formData.productivity, note: text },
-              })
-            }
-          />
-        </View>
-      </View>
-
-      {/* Health Section */}
-      <View className="mb-6">
-        <Text className="text-white text-lg mb-2">Health</Text>
-        <View className="bg-gray-800 rounded-md p-4">
-          <Text className="text-white mb-2">Rating: {formData.health.rating}</Text>
-          <Slider
-            minimumValue={1}
-            maximumValue={10}
-            step={1}
-            value={formData.health.rating}
-            onValueChange={(value) =>
-              setFormData({
-                ...formData,
-                health: { ...formData.health, rating: value },
-              })
-            }
-            minimumTrackTintColor="#60a5fa"
-            maximumTrackTintColor="#6b7280"
-            thumbTintColor="#60a5fa"
-          />
-          <TextInput
-            className="mt-3 bg-gray-700 rounded-md p-3 text-white"
-            placeholder="Notes on health..."
-            placeholderTextColor="#9ca3af"
-            multiline
-            value={formData.health.note}
-            onChangeText={(text) =>
-              setFormData({
-                ...formData,
-                health: { ...formData.health, note: text },
-              })
-            }
-          />
-        </View>
-      </View>
-
-      {/* Mood Section */}
-      <View className="mb-6">
-        <Text className="text-white text-lg mb-2">Mood</Text>
-        <View className="bg-gray-800 rounded-md p-4">
-          <Text className="text-white mb-2">Rating: {formData.mood.rating}</Text>
-          <Slider
-            minimumValue={1}
-            maximumValue={10}
-            step={1}
-            value={formData.mood.rating}
-            onValueChange={(value) =>
-              setFormData({
-                ...formData,
-                mood: { ...formData.mood, rating: value },
-              })
-            }
-            minimumTrackTintColor="#f472b6"
-            maximumTrackTintColor="#6b7280"
-            thumbTintColor="#f472b6"
-          />
-          <TextInput
-            className="mt-3 bg-gray-700 rounded-md p-3 text-white"
-            placeholder="Notes on mood..."
-            placeholderTextColor="#9ca3af"
-            multiline
-            value={formData.mood.note}
-            onChangeText={(text) =>
-              setFormData({
-                ...formData,
-                mood: { ...formData.mood, note: text },
-              })
-            }
-          />
-        </View>
-      </View>
-
-      <TouchableOpacity
-        className="bg-gray-800 p-4 rounded-md mb-6"
-        onPress={handleSubmit}
-      >
-        <Text className="text-white text-center font-bold text-lg">
-          {editing ? 'Update Journal' : 'Create Journal'}
-        </Text>
-      </TouchableOpacity>
+      </Card>
     </ScrollView>
   );
 
   const renderMonthCard = (year, month) => {
-
-    console.log('yearData:', yearData);
-
-
-    //const monthData = yearData[year]?.months[month];
     const monthNumber = month.padStart(2, '0');
     const monthData = yearData[year]?.months[monthNumber];
     const monthName = getMonthName(parseInt(month));
 
-    //console.log(`Checking ${year}-${monthNumber}:`, yearData[year]?.months[monthNumber]);
-
-      // Debug log to see what we're checking
-  console.log(`Looking up month data for ${year}-${monthNumber}:`, monthData);
+    console.log(`Looking up month data for ${year}-${monthNumber}:`, monthData);
     
-      // Determine the background color based on whether data exists
-  const bgColorClass = monthData 
-  ? "bg-green-800" // Green background for months with data
-  : "bg-gray-800"; // Original gray for months without data
-
+    // Determine the background color based on whether data exists
+    const bgColorClass = monthData 
+      ? "bg-[#8B4513]/20 border-[#8B4513]/40" 
+      : "bg-gray-100 border-gray-200";
 
     return (
       <TouchableOpacity
         key={`${year}-${month}`}
-        className={`${bgColorClass} p-4 rounded-lg m-1 flex-1 min-w-[80px]`}
+        className={`${bgColorClass} p-4 rounded-xl m-1 flex-1 min-w-[80px] border`}
         onPress={() => {
           setSelectedMonth(`${year}-${monthNumber}`);
           if (monthData) {
@@ -539,17 +540,15 @@ const Journal = () => {
           }
         }}
       >
-        <Text className="text-white font-bold">{monthName}</Text>
-              {/* Add this temporarily to debug */}
-      <Text className="text-white text-xs">{`${year}-${monthNumber}`}</Text>
+        <Text className={`font-bold ${monthData ? 'text-[#8B4513]' : 'text-gray-600'}`}>{monthName}</Text>
       </TouchableOpacity>
     );
   };
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-black">
-        <ActivityIndicator size="large" color="#ffffff" />
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#8B4513" />
       </View>
     );
   }
@@ -559,153 +558,191 @@ const Journal = () => {
     const monthData = yearData[year]?.months[month];
 
     return (
-      <View className="flex-1 bg-black p-4">
-        <View className="flex-row justify-between items-center mb-4">
+      <SafeAreaView className="flex-1 bg-white">
+        {/* Header */}
+        <View className="px-4 py-4 border-b border-gray-200 flex-row justify-between items-center">
           <TouchableOpacity onPress={resetForm} className="p-2">
-            <X color="#ffffff" size={24} />
+            <ArrowLeft size={24} color="#8B4513" />
           </TouchableOpacity>
+          <Text className="text-xl font-bold text-[#8B4513]">
+            {getMonthName(parseInt(month))} {year}
+          </Text>
           
           {monthData && !editing ? (
-  <View className="flex-row">
-    <TouchableOpacity 
-      onPress={() => setEditing(true)} 
-      className="p-2"
-    >
-      <PencilLine color="#ffffff" size={24} />
-    </TouchableOpacity>
-    <TouchableOpacity 
-      onPress={() => {
-        Alert.alert(
-          'Delete Journal',
-          'Are you sure you want to delete this journal entry?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Delete', 
-              style: 'destructive',
-              onPress: () => deleteJournal(selectedMonth)
-            }
-          ]
-        );
-      }} 
-      className="p-2 ml-2"
-    >
-      <Trash color="#ff4444" size={24} />
-    </TouchableOpacity>
-  </View>
-) : null}
+            <View className="flex-row">
+              <TouchableOpacity 
+                onPress={() => setEditing(true)} 
+                className="p-2"
+              >
+                <PencilLine color="#8B4513" size={22} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => {
+                  Alert.alert(
+                    'Delete Journal',
+                    'Are you sure you want to delete this journal entry?',
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      { 
+                        text: "Delete", 
+                        style: "destructive",
+                        onPress: () => deleteJournal(selectedMonth)
+                      }
+                    ]
+                  );
+                }} 
+                className="p-2 ml-2"
+              >
+                <Trash2 color="#ef4444" size={22} />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={{ width: 60 }} />
+          )}
         </View>
 
-        {editing ? (
-          renderForm()
-        ) : (
-          <ScrollView className="flex-1">
-            {monthData ? (
-              <View>
-                <Text className="text-white text-2xl font-bold mb-4">{getMonthName(parseInt(month))} {year}</Text>
-                <View className="bg-gray-800 rounded-lg p-4 mb-4">
-                  <Text className="text-white text-xl font-bold mb-2">Highlight</Text>
-                  <Text className="text-gray-300">{monthData.monthHighlight}</Text>
-                </View>
+        <View className="flex-1 p-4">
+          {editing ? (
+            renderForm()
+          ) : (
+            <ScrollView className="flex-1">
+              {monthData ? (
+                <FadeIn>
+                  <Card
+                    title="Monthly Highlight"
+                    className="mb-4"
+                  >
+                    <Text className="text-gray-700">{monthData.monthHighlight}</Text>
+                  </Card>
 
-                <View className="bg-gray-800 rounded-lg p-4 mb-4">
-                  <Text className="text-white text-xl font-bold mb-2">Skills Learnt</Text>
-                  <Text className="text-gray-300">{monthData.skillsLearnt}</Text>
-                </View>
+                  <Card
+                    title="Skills Learnt"
+                    className="mb-4"
+                  >
+                    <Text className="text-gray-700">{monthData.skillsLearnt}</Text>
+                  </Card>
 
-                <View className="bg-gray-800 rounded-lg p-4 mb-4">
-                  <Text className="text-white text-xl font-bold mb-2">Productivity</Text>
-                  <Text className="text-green-500 text-lg">Rating: {monthData.productivity.rating}/10</Text>
-                  <Text className="text-gray-300 mt-2">{monthData.productivity.note}</Text>
-                </View>
+                  <Card
+                    title="Productivity"
+                    className="mb-4"
+                  >
+                    <View className="flex-row items-center mb-2">
+                      <View className="bg-[#8B4513]/10 px-3 py-1 rounded-full">
+                        <Text className="text-[#8B4513] font-bold">
+                          Rating: {monthData.productivity.rating}/10
+                        </Text>
+                      </View>
+                    </View>
+                    {monthData.productivity.note ? (
+                      <Text className="text-gray-700 mt-2">{monthData.productivity.note}</Text>
+                    ) : null}
+                  </Card>
 
-                <View className="bg-gray-800 rounded-lg p-4 mb-4">
-                  <Text className="text-white text-xl font-bold mb-2">Health</Text>
-                  <Text className="text-blue-500 text-lg">Rating: {monthData.health.rating}/10</Text>
-                  <Text className="text-gray-300 mt-2">{monthData.health.note}</Text>
-                </View>
+                  <Card
+                    title="Health"
+                    className="mb-4"
+                  >
+                    <View className="flex-row items-center mb-2">
+                      <View className="bg-[#8B4513]/10 px-3 py-1 rounded-full">
+                        <Text className="text-[#8B4513] font-bold">
+                          Rating: {monthData.health.rating}/10
+                        </Text>
+                      </View>
+                    </View>
+                    {monthData.health.note ? (
+                      <Text className="text-gray-700 mt-2">{monthData.health.note}</Text>
+                    ) : null}
+                  </Card>
 
-                <View className="bg-gray-800 rounded-lg p-4 mb-4">
-                  <Text className="text-white text-xl font-bold mb-2">Mood</Text>
-                  <Text className="text-pink-500 text-lg">Rating: {monthData.mood.rating}/10</Text>
-                  <Text className="text-gray-300 mt-2">{monthData.mood.note}</Text>
+                  <Card
+                    title="Mood"
+                    className="mb-4"
+                  >
+                    <View className="flex-row items-center mb-2">
+                      <View className="bg-[#8B4513]/10 px-3 py-1 rounded-full">
+                        <Text className="text-[#8B4513] font-bold">
+                          Rating: {monthData.mood.rating}/10
+                        </Text>
+                      </View>
+                    </View>
+                    {monthData.mood.note ? (
+                      <Text className="text-gray-700 mt-2">{monthData.mood.note}</Text>
+                    ) : null}
+                  </Card>
+                </FadeIn>
+              ) : (
+                <View className="flex-1 justify-center items-center p-8">
+                  <Text className="text-gray-500 text-lg mb-4 text-center">No journal entry for this month</Text>
+                  <Button
+                    title="Create Entry"
+                    onPress={() => setEditing(true)}
+                    icon={<Plus size={18} color="white" />}
+                  />
                 </View>
-              </View>
-            ) : (
-              <View className="flex-1 justify-center items-center">
-                <Text className="text-gray-400 text-lg mb-4">No journal entry for this month</Text>
-                <TouchableOpacity
-                  className="bg-gray-800 px-6 py-3 rounded-md"
-                  onPress={() => setEditing(true)}
-                >
-                  <Text className="text-white font-bold">Create Entry</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </ScrollView>
-        )}
-      </View>
+              )}
+            </ScrollView>
+          )}
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-black p-4">
-    {/* Year Navigation */}
-    <View className="flex-row items-center justify-center mb-4">
-      <TouchableOpacity 
-        onPress={() => setSelectedYear(prev => prev - 1)}
-        className="p-2"
-      >
-        <ChevronLeft color="#ffffff" size={24} />
-      </TouchableOpacity>
-      <Text className="text-white text-xl font-bold mx-4">{selectedYear}</Text>
-      <TouchableOpacity 
-        onPress={() => setSelectedYear(prev => prev + 1)}
-        className="p-2"
-      >
-        <ChevronRight color="#ffffff" size={24} />
-      </TouchableOpacity>
-    </View>
+    <SafeAreaView className="flex-1 bg-white">
+      {/* Header */}
+      <View className="px-4 py-4 border-b border-gray-200">
+        <Text className="text-2xl font-bold text-[#8B4513]">Journal</Text>
+      </View>
+      
+      <ScrollView className="flex-1 p-4">
+        {/* Year Navigation */}
+        <YearNavigation />
 
-    {/* Year Data Display */}
-    <View>
-      {yearData[selectedYear] ? (
-        <View className="mb-6">
-          <View className="mb-4">
-            <LineChart
-              data={yearData[selectedYear].chartData}
-              width={screenWidth - 32}
-              height={220}
-              chartConfig={chartConfig}
-              bezier
-              style={{
-                marginVertical: 8,
-                borderRadius: 16,
-              }}
-              legend={yearData[selectedYear].chartData.legend}
-            />
-          </View>
+        {/* Year Data Display */}
+        <View>
+          {yearData[selectedYear] ? (
+            <SlideUp>
+              <View className="mb-6">
+                <Card title={`${selectedYear} Overview`} className="mb-4">
+                  <LineChart
+                    data={yearData[selectedYear].chartData}
+                    width={screenWidth - 48}
+                    height={220}
+                    chartConfig={chartConfig}
+                    bezier
+                    style={{
+                      marginVertical: 8,
+                      borderRadius: 16,
+                    }}
+                    legend={yearData[selectedYear].chartData.legend}
+                  />
+                </Card>
 
-          <View className="flex-row flex-wrap justify-between">
-            {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(month => 
-              renderMonthCard(selectedYear.toString(), month)
-            )}
-          </View>
+                <Text className="text-[#8B4513] text-lg font-bold mt-3 mb-3">Monthly Entries</Text>
+                <View className="flex-row flex-wrap justify-between mb-4">
+                  {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(month => 
+                    renderMonthCard(selectedYear.toString(), month)
+                  )}
+                </View>
+              </View>
+            </SlideUp>
+          ) : (
+            <SlideUp>
+              <View className="flex-1 items-center justify-center py-8">
+                <Text className="text-gray-600 text-lg mb-4">No entries for {selectedYear}</Text>
+                <Text className="text-gray-500 text-center mb-6">Click on any month below to start adding entries</Text>
+                <View className="flex-row flex-wrap justify-between mb-4">
+                  {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(month => 
+                    renderMonthCard(selectedYear.toString(), month)
+                  )}
+                </View>
+              </View>
+            </SlideUp>
+          )}
         </View>
-      ) : (
-        <View className="flex-1 items-center justify-center py-8">
-          <Text className="text-gray-400 text-lg mb-4">No entries for {selectedYear}</Text>
-          <Text className="text-gray-500 text-center mb-6">Click on any month below to start adding entries</Text>
-          <View className="flex-row flex-wrap justify-between">
-            {Array.from({ length: 12 }, (_, i) => (i + 1).toString()).map(month => 
-              renderMonthCard(selectedYear.toString(), month)
-            )}
-          </View>
-        </View>
-      )}
-    </View>
-  </ScrollView>
-);
+      </ScrollView>
+    </SafeAreaView>
+  );
 };
 
 export default Journal;

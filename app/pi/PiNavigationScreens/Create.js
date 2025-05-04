@@ -1,9 +1,12 @@
-import { View, Text, TextInput, TouchableOpacity, Alert, Platform, Modal, FlatList, Image } from 'react-native';
+// app/pi/PiNavigationScreens/Create.js
+import { View, Text, TextInput, TouchableOpacity, Alert, Platform, Modal, FlatList, Image, SafeAreaView } from 'react-native';
 import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import Icon from 'react-native-vector-icons/Ionicons';
+import { ArrowLeft, Calendar, Check, X } from 'lucide-react-native';
+import Button from '../../../components/Button';
+import Card from '../../../components/Card';
 
 const categoriesList = [
   'Food', 'Groceries', 'Travel', 'Health', 'Leisure',
@@ -22,7 +25,7 @@ const Create = () => {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   const onDateChange = (event, selectedDate) => {
-    setShowDatePicker(Platform.OS === 'ios'); // Keep open on iOS, close on Android
+    setShowDatePicker(Platform.OS === 'ios'); 
     if (selectedDate) {
       setDate(selectedDate);
     }
@@ -34,18 +37,17 @@ const Create = () => {
       return;
     }
 
-   // Fix for date handling with timezone adjustment
-   const selectedDate = new Date(date);
-   // Add the timezone offset to ensure correct date
-   const adjustedDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
-   const formattedDate = adjustedDate.toISOString().split('T')[0];
+    // Fix for date handling with timezone adjustment
+    const selectedDate = new Date(date);
+    const adjustedDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
+    const formattedDate = adjustedDate.toISOString().split('T')[0];
 
-   const expenseData = {
-    amount: parseFloat(amount),
-    category,
-    reason,
-    date: formattedDate,
-  };
+    const expenseData = {
+      amount: parseFloat(amount),
+      category,
+      reason,
+      date: formattedDate,
+    };
 
     try {
       const token = await AsyncStorage.getItem('x-auth-token');
@@ -55,7 +57,7 @@ const Create = () => {
         return;
       }
 
-    console.log('Sending expense data:', expenseData);  // Debug log
+      console.log('Sending expense data:', expenseData);  // Debug log
 
       const response = await fetch('https://expensetrackerbackend-j2tz.onrender.com/api/expenses', {
         method: 'POST',
@@ -66,9 +68,8 @@ const Create = () => {
         body: JSON.stringify(expenseData),
       });
 
-      const responseData = await response.json();  // Get response data
-      console.log('Server response:', responseData);  // Debug log
-  
+      const responseData = await response.json();  
+      console.log('Server response:', responseData);  
 
       if (!response.ok) {
         throw new Error('Failed to add expense');
@@ -78,99 +79,120 @@ const Create = () => {
       router.back();    
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Failed to add expense. Please try again. error : ');
+      Alert.alert('Error', 'Failed to add expense. Please try again.');
     }
   };
 
-    // Function to format display date
-    const formatDisplayDate = (date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
+  // Function to format display date
+  const formatDisplayDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const handleCategorySelect = (selectedCategory) => {
     setCategory(selectedCategory);
     setShowCategoryModal(false);
   };
 
+  // Render category item for the modal
+  const renderCategoryItem = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => handleCategorySelect(item)}
+      className="border border-[#8B4513]/20 rounded-xl p-4 mb-2 bg-[#8B4513]/10"
+    >
+      <Text className="text-[#8B4513] text-center font-medium">{item}</Text>
+    </TouchableOpacity>
+  );
+
   return (
-    <View className="flex-1 bg-black">
-      {/* Image at the Top */}
-      <Image
-        source={require('../../../assets/images/adaptive-icon.png')}
-        className="mt-5 w-full h-1/3"
-        resizeMode="contain"
-      />
-
-      {/* Back Icon */}
-      <TouchableOpacity 
-        onPress={() => router.back()}  
-        className="absolute top-4 left-4 bg-gray-900/50 p-2 rounded-full"
-      >
-        <Icon name="arrow-back" size={24} color="white" />
-      </TouchableOpacity>
-
-      <View className="flex-1 justify-center items-center p-4">
-        <Text className="text-lg font-bold mb-6 text-white">ADD EXPENSE</Text>
-
-        {/* Amount Input */}
-        <TextInput
-          placeholder="Amount"
-          placeholderTextColor="#9ca3af"
-          value={amount}
-          onChangeText={setAmount}
-          className="border border-gray-700 rounded-lg p-4 mb-4 w-full bg-gray-900 text-white"
-          keyboardType="numeric"
-        />
-
-        {/* Category Selection */}
-        <TouchableOpacity
-          onPress={() => setShowCategoryModal(true)}
-          className="border border-gray-700 rounded-lg p-4 mb-4 w-full bg-gray-900"
+    <SafeAreaView className="flex-1 bg-white">
+      {/* Header */}
+      <View className="px-4 py-4 border-b border-gray-200 flex-row items-center">
+        <TouchableOpacity 
+          onPress={() => router.back()}  
+          className="p-2 rounded-full"
         >
-          <Text className="text-gray-400">
-            {category || 'Select Category'}
-          </Text>
+          <ArrowLeft size={24} color="#8B4513" />
         </TouchableOpacity>
+        <Text className="text-xl font-bold text-[#8B4513] ml-4">Add Expense</Text>
+      </View>
 
-        {/* Reason Input */}
-        <TextInput
-          placeholder="Reason"
-          placeholderTextColor="#9ca3af"
-          value={reason}
-          onChangeText={setReason}
-          className="border border-gray-700 rounded-lg p-4 mb-4 w-full bg-gray-900 text-white"
-        />
+      <View className="flex-1 p-4">
+        <Card title="New Expense" className="mb-4">
+          {/* Amount Input */}
+          <View className="mb-4">
+            <Text className="text-gray-600 mb-2">Amount</Text>
+            <TextInput
+              placeholder="Enter amount"
+              placeholderTextColor="#9ca3af"
+              value={amount}
+              onChangeText={setAmount}
+              className="border border-gray-300 rounded-xl p-4 bg-gray-50 text-gray-800"
+              keyboardType="numeric"
+            />
+          </View>
 
-      {/* Date Selection */}
-      <TouchableOpacity
-        onPress={() => setShowDatePicker(true)}
-        className="border border-gray-700 rounded-lg p-4 mb-6 w-full bg-gray-900"
-      >
-        <Text className="text-gray-400">
-          {formatDisplayDate(date)}
-        </Text>
-      </TouchableOpacity>
+          {/* Category Selection */}
+          <View className="mb-4">
+            <Text className="text-gray-600 mb-2">Category</Text>
+            <TouchableOpacity
+              onPress={() => setShowCategoryModal(true)}
+              className="border border-gray-300 rounded-xl p-4 bg-gray-50 flex-row justify-between items-center"
+            >
+              <Text className={category ? "text-gray-800" : "text-gray-400"}>
+                {category || 'Select Category'}
+              </Text>
+              <Calendar size={20} color="#8B4513" />
+            </TouchableOpacity>
+          </View>
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={onDateChange}
-        />
-      )}
+          {/* Reason Input */}
+          <View className="mb-4">
+            <Text className="text-gray-600 mb-2">Reason</Text>
+            <TextInput
+              placeholder="Why did you spend?"
+              placeholderTextColor="#9ca3af"
+              value={reason}
+              onChangeText={setReason}
+              className="border border-gray-300 rounded-xl p-4 bg-gray-50 text-gray-800"
+              multiline
+              numberOfLines={2}
+            />
+          </View>
+
+          {/* Date Selection */}
+          <View className="mb-6">
+            <Text className="text-gray-600 mb-2">Date</Text>
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              className="border border-gray-300 rounded-xl p-4 bg-gray-50 flex-row justify-between items-center"
+            >
+              <Text className="text-gray-800">
+                {formatDisplayDate(date)}
+              </Text>
+              <Calendar size={20} color="#8B4513" />
+            </TouchableOpacity>
+          </View>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onDateChange}
+            />
+          )}
+        </Card>
 
         {/* Add Expense Button */}
-        <TouchableOpacity
-           //onPress={() => router.back()}
-           onPress={handleAddExpense}
-          className="bg-gray-900 mb-5 p-4 rounded-lg w-full"
-        >
-          <Text className="text-white text-center font-bold">Add Expense</Text>
-        </TouchableOpacity>
+        <Button 
+          title="Add Expense" 
+          onPress={handleAddExpense} 
+          size="large"
+          className="mt-4"
+        />
       </View>
 
       {/* Category Modal */}
@@ -181,32 +203,30 @@ const Create = () => {
         onRequestClose={() => setShowCategoryModal(false)}
       >
         <View className="flex-1 justify-end bg-black/50">
-          <View className="bg-gray-900 rounded-t-3xl p-6 h-2/3">
-            <Text className="text-xl font-bold mb-4 text-white">Select Category</Text>
+          <View className="bg-white rounded-t-3xl p-6">
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-xl font-bold text-[#8B4513]">Select Category</Text>
+              <TouchableOpacity
+                onPress={() => setShowCategoryModal(false)}
+                className="p-2"
+              >
+                <X size={24} color="#8B4513" />
+              </TouchableOpacity>
+            </View>
+            
             <FlatList
               data={categoriesList}
               keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => handleCategorySelect(item)}
-                  className="border border-gray-700 rounded-lg p-4 mb-2 bg-gray-800/50"
-                >
-                  <Text className="text-white">{item}</Text>
-                </TouchableOpacity>
-              )}
+              renderItem={renderCategoryItem}
               showsVerticalScrollIndicator={false}
+              numColumns={2}
+              columnWrapperStyle={{ justifyContent: 'space-between' }}
               className="mb-4"
             />
-            <TouchableOpacity
-              onPress={() => setShowCategoryModal(false)}
-              className="bg-gray-800 p-4 rounded-lg border border-gray-700"
-            >
-              <Text className="text-white text-center font-bold">Close</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 

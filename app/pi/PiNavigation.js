@@ -1,10 +1,13 @@
+// app/pi/PiNavigation.js
 import React, { useEffect } from 'react';
 import { BackHandler, Alert } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Icon2 from 'react-native-vector-icons/FontAwesome';
+import { Home, BarChart2, BookOpen, PlusCircle } from 'lucide-react-native';
 import Expenses from './PiNavigationScreens/Expenses';
-import Profile from './PiNavigationScreens/Profile';
+import Insights from './PiNavigationScreens/Insights';
 import Journal from './PiNavigationScreens/Journal';
+import Dashboard from '../../components/Dashboard';
+import Create from './PiNavigationScreens/Create';
 
 const Tab = createBottomTabNavigator();
 
@@ -27,41 +30,71 @@ const PiNavigation = () => {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#000',  // Set background color to black
-          borderTopColor: '#333',   // Set border color to dark gray (optional)
+          backgroundColor: '#ffffff',
+          borderTopColor: '#f5f5f5',
+          borderTopWidth: 1,
+          elevation: 0,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
-        tabBarActiveTintColor: '#fff',  // Active icon color (white)
-        tabBarInactiveTintColor: '#888', // Inactive icon color (gray)
+        tabBarActiveTintColor: '#8B4513',
+        tabBarInactiveTintColor: '#999',
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        },
       }}
     >
-
       <Tab.Screen
-        name="Spend insights"
-        component={Profile}
+        name="Dashboard"
+        component={Dashboard}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Icon2 name="bar-chart" size={size} color={color} />
+            <Home size={size} color={color} />
           ),
         }}
       />
+
       <Tab.Screen
-        name="Expense log"
+        name="Expenses"
         component={Expenses}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Icon2 name="money" size={size} color={color} />
+            <PlusCircle size={size} color={color} />
           ),
         }}
       />
-      < Tab.Screen
-        name="Monthly journal"
+
+      <Tab.Screen
+        name="Journal"
         component={Journal}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Icon2 name="book" size={size} color={color} />
+            <BookOpen size={size} color={color} />
           ),
         }}
       />
+
+      <Tab.Screen
+        name="Insights"
+        component={Insights}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <BarChart2 size={size} color={color} />
+          ),
+        }}
+      />
+
+<Tab.Screen 
+    name="Create" 
+    component={Create} 
+    options={{ 
+      tabBarButton: () => null,
+      tabBarVisible: false
+    }}
+  />
+
     </Tab.Navigator>
   );
 };

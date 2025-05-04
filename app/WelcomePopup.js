@@ -66,7 +66,7 @@ const WelcomePopup = ({ manualVisible, setManualVisible }) => {
             <Text className="text-white text-base mb-4">• Secure logout when needed.</Text>
 
             <Text className="text-white text-base italic mb-6">
-              Get started now and let TRACKNEST help you organize your life, one step at a time!
+              Get started now and let MYTRACKERY help you organize your life, one step at a time!
             </Text>
           </ScrollView>
 

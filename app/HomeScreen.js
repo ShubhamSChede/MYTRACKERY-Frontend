@@ -61,6 +61,8 @@ const HomeScreen = ({ navigation }) => {
             Developed by Shubham Chede
           </Text>
         </TouchableOpacity>
+        <Text className="text-gray-700 text-sm mt-2">© 2023 MYTRACKERY. All rights reserved.</Text>
+        <Text className="text-gray-700 text-sm">Version 3.0.1</Text>
 
       </View>
     </View>
