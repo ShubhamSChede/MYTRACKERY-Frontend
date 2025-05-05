@@ -161,7 +161,7 @@ const Login = ({ navigation }) => {
           
           {/* Version Info */}
           <Text className="text-gray-400 text-xs text-center mt-2">
-            Version 3.1.0
+            Version 3.0.3
           </Text>
         </View>
       </View>

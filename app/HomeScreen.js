@@ -129,7 +129,7 @@ const HomeScreen = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
         <Text className="text-gray-500 text-xs text-center mt-1">© 2023 MYTRACKERY. All rights reserved.</Text>
-        <Text className="text-gray-400 text-xs text-center">Version 3.1.0</Text>
+        <Text className="text-gray-400 text-xs text-center">Version 3.0.3</Text>
       </View>
     </SafeAreaView>
   );
