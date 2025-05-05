@@ -281,6 +281,7 @@ const Journal = () => {
       const data = await response.json();
       if (response.ok) {
         Alert.alert('Success', 'Journal updated successfully');
+        publishDataUpdate('journal-updated');
         await fetchJournals();
         setEditing(false);
       } else {

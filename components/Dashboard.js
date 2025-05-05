@@ -1,6 +1,6 @@
 // components/Dashboard.js
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, Image, ActivityIndicator, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Plus, BookOpen, BarChart2, Clipboard, LogOut, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react-native';
@@ -8,15 +8,14 @@ import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Dimensions } from 'react-native';
 import { FadeIn, SlideUp } from './AnimationUtils';
 import { useNavigation } from '@react-navigation/native';
-
-
+import { subscribeToDataUpdates } from '../utilities/EventEmitter'; 
 const screenWidth = Dimensions.get('window').width;
 
 const Dashboard = () => {
   const router = useRouter();
   const navigation = useNavigation();
   const [userData, setUserData] = useState(null);
-  const [expenses, setExpenses] = useState([]); // Add this line
+  const [expenses, setExpenses] = useState([]);
   const [monthlyExpensesData, setMonthlyExpensesData] = useState({ labels: [], data: [] });
   const [todayExpenses, setTodayExpenses] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -27,9 +26,23 @@ const Dashboard = () => {
     year: new Date().getFullYear()
   });
   const [categoryBreakdown, setCategoryBreakdown] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    // Subscribe to data updates
+    const unsubscribe = subscribeToDataUpdates((updateType) => {
+      console.log(`Dashboard received update event: ${updateType}`);
+      fetchDashboardData();
+    });
+    
+    // Cleanup subscription when component unmounts
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -47,7 +60,6 @@ const Dashboard = () => {
         return;
       }
 
-      // Fetch dashboard data - this will give us the user info
       const dashboardResponse = await fetch(
         'https://expensetrackerbackend-j2tz.onrender.com/api/dashboard',
         {
@@ -66,7 +78,6 @@ const Dashboard = () => {
       const dashboardData = await dashboardResponse.json();
       setUserData(dashboardData.user);
       
-      // Fetch all expenses to calculate today's expenses and monthly chart
       const expensesResponse = await fetch(
         'https://expensetrackerbackend-j2tz.onrender.com/api/expenses',
         {
@@ -83,10 +94,9 @@ const Dashboard = () => {
       }
 
       const expensesData = await expensesResponse.json();
-      setExpenses(expensesData); // Store expenses in state
+      setExpenses(expensesData);
       processExpensesData(expensesData);
       
-      // Fetch journal entries to get the latest
       const journalResponse = await fetch(
         'https://expensetrackerbackend-j2tz.onrender.com/api/journal',
         {
@@ -115,40 +125,27 @@ const Dashboard = () => {
       return;
     }
 
-    // Get today's date for filtering
     const today = new Date();
     const todayString = formatDate(today);
-    
-    // Use selected month & year instead of current
     const { month: currentMonth, year: currentYear } = selectedMonthYear;
-    
-    // Calculate today's total expenses
     let todayTotal = 0;
     let recentExpList = [];
-    
-    // Create an array for each day of the selected month (1-indexed days)
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     const dailyExpenses = Array(daysInMonth).fill(0);
-    
-    // For category breakdown
     const categories = {};
     
-    // Group expenses by day for selected month and calculate today's expenses
     expenses.forEach(expense => {
       const expenseDate = new Date(expense.date);
       const expenseDateString = formatDate(expenseDate);
       
-      // Check if expense is from today
       if (expenseDateString === todayString) {
         todayTotal += expense.amount;
       }
       
-      // Check if expense is from selected month for the chart
       if (expenseDate.getMonth() === currentMonth && expenseDate.getFullYear() === currentYear) {
         const day = expenseDate.getDate();
         dailyExpenses[day - 1] += expense.amount;
         
-        // Add to category breakdown
         const category = expense.category;
         if (categories[category]) {
           categories[category] += expense.amount;
@@ -158,12 +155,10 @@ const Dashboard = () => {
       }
     });
     
-    // Get 3 most recent expenses for display
     recentExpList = [...expenses]
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 3);
     
-    // Create labels for the chart - only label every 5 days for readability
     const labels = [];
     for (let i = 1; i <= daysInMonth; i++) {
       if (i === 1 || i % 5 === 0 || i === daysInMonth || i === today.getDate()) {
@@ -173,7 +168,6 @@ const Dashboard = () => {
       }
     }
     
-    // Process category data for pie chart
     const categoryData = processCategoryData(categories);
     
     setTodayExpenses(todayTotal);
@@ -184,18 +178,18 @@ const Dashboard = () => {
 
   const processCategoryData = (categories) => {
     const colors = [
-      '#A8DADC', // Powder Blue
-      '#457B9D', // Desaturated Blue
-      '#F4A261', // Soft Orange
-      '#E76F51', // Soft Red
-      '#2A9D8F', // Teal
-      '#E9C46A', // Pale Yellow
-      '#B5838D', // Dusty Pink
-      '#81B29A', // Soft Green
-      '#A3A1F7', // Light Lavender
-      '#FFB4A2', // Light Coral
-      '#6D6875', // Muted Purple
-      '#CF9F7D', // Light Brown
+      '#A8DADC',
+      '#457B9D',
+      '#F4A261',
+      '#E76F51',
+      '#2A9D8F',
+      '#E9C46A',
+      '#B5838D',
+      '#81B29A',
+      '#A3A1F7',
+      '#FFB4A2',
+      '#6D6875',
+      '#CF9F7D',
     ];
 
     const totalAmount = Object.values(categories).reduce((sum, amount) => sum + amount, 0);
@@ -231,7 +225,6 @@ const Dashboard = () => {
       }
     }
     
-    // Don't allow future months
     const currentDate = new Date();
     if (newYear > currentDate.getFullYear() || 
         (newYear === currentDate.getFullYear() && newMonth > currentDate.getMonth())) {
@@ -246,9 +239,7 @@ const Dashboard = () => {
       return;
     }
     
-    // Find the most recent journal entry
     const sortedJournals = [...journals].sort((a, b) => {
-      // Sort by year and month descending
       const [yearA, monthA] = a.monthYear.split('-');
       const [yearB, monthB] = b.monthYear.split('-');
       
@@ -289,6 +280,17 @@ const Dashboard = () => {
     return `${getMonthName(parseInt(month) - 1)} ${year}`;
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await fetchDashboardData();
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
@@ -298,8 +300,19 @@ const Dashboard = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      {/* Header with User Info and Logout */}
+    <ScrollView 
+      className="flex-1 bg-white"
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#8B4513"]}
+          tintColor="#8B4513"
+          title="Refreshing dashboard..."
+          titleColor="#8B4513"
+        />
+      }
+    >
       <FadeIn>
         <View className="px-4 pt-12 pb-4 bg-[#8B4513]">
           <View className="flex-row justify-between items-center">
@@ -321,7 +334,6 @@ const Dashboard = () => {
         </View>
       </FadeIn>
       
-      {/* Today's Summary Card */}
       <SlideUp delay={100}>
         <View className="m-4 p-4 bg-white rounded-3xl shadow-md elevation-3 border border-[#8B4513]/10">
           <Text className="text-[#8B4513] text-lg font-bold mb-3">Today's Summary</Text>
@@ -342,7 +354,6 @@ const Dashboard = () => {
         </View>
       </SlideUp>
       
-      {/* Quick Actions */}
       <SlideUp delay={200}>
         <View className="mx-4 mb-6">
           <Text className="text-[#8B4513] text-lg font-bold mb-3">Quick Actions</Text>
@@ -393,10 +404,8 @@ const Dashboard = () => {
         </View>
       </SlideUp>
       
-      {/* Monthly Expenses Chart */}
       <SlideUp delay={300}>
         <View className="mx-4 mb-6 p-4 bg-white rounded-3xl shadow-md elevation-3 border border-[#8B4513]/10">
-          {/* Month Navigation */}
           <View className="flex-row justify-between items-center mb-3">
             <TouchableOpacity 
               onPress={() => changeMonth('prev')}
@@ -417,7 +426,6 @@ const Dashboard = () => {
             </TouchableOpacity>
           </View>
           
-          {/* Daily Expenses Line Chart */}
           {monthlyExpensesData.data.some(amount => amount > 0) ? (
             <LineChart
               data={{
@@ -460,12 +468,10 @@ const Dashboard = () => {
             </View>
           )}
           
-          {/* Category Breakdown Section */}
           {categoryBreakdown.length > 0 && (
             <View className="mt-4 pt-4 border-t border-gray-200">
               <Text className="text-[#8B4513] font-bold mb-3">Category Breakdown</Text>
               
-              {/* Pie Chart */}
               <View className="flex-row justify-center mb-2">
                 <PieChart
                   data={categoryBreakdown}
@@ -483,7 +489,6 @@ const Dashboard = () => {
                 />
               </View>
               
-              {/* Custom Legend */}
               <View className="mt-2">
                 {categoryBreakdown.map((category, index) => (
                   <View key={index} className="flex-row items-center justify-between mb-2">
@@ -512,7 +517,6 @@ const Dashboard = () => {
         </View>
       </SlideUp>
 
-      {/* Recent Expenses */}
       <SlideUp delay={400}>
         <View className="mx-4 mb-6 p-4 bg-white rounded-3xl shadow-md elevation-3 border border-[#8B4513]/10">
           <View className="flex-row justify-between items-center mb-2">
@@ -553,7 +557,6 @@ const Dashboard = () => {
         </View>
       </SlideUp>
       
-      {/* Journal Highlight */}
       <SlideUp delay={450}>
         <View className="mx-4 mb-8 p-4 bg-white rounded-3xl shadow-md elevation-3 border border-[#8B4513]/10">
           <View className="flex-row justify-between items-center mb-2">
@@ -606,3 +609,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

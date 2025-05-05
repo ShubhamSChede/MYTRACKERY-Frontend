@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar, Check, X } from 'lucide-react-native';
 import Button from '../../../components/Button';
 import Card from '../../../components/Card';
 import { useNavigation } from '@react-navigation/native';
+import { publishDataUpdate } from '../../../utilities/EventEmitter'; 
 
 const categoriesList = [
   'Food', 'Groceries', 'Travel', 'Health', 'Leisure',
@@ -78,6 +79,7 @@ const Create = () => {
       }
 
       Alert.alert('Success', 'Expense added successfully!');
+      publishDataUpdate('expense-added');
       navigation.navigate('Dashboard');  // Navigate to the dashboard after adding expense    
     } catch (error) {
       console.error(error);

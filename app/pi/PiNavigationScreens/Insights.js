@@ -10,6 +10,7 @@ import { generatePDF } from '../../../components/pdfGenerator';
 import Card from '../../../components/Card';
 import Button from '../../../components/Button';
 import { FadeIn, SlideUp, ScaleIn } from '../../../components/AnimationUtils';
+import { subscribeToDataUpdates } from '@/utilities/EventEmitter';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -22,10 +23,28 @@ export class Insights extends Component {
     selectedYear: '',
     expandedExpenseIds: [],
   };
-
+  unsubscribeFromEvents = null;
   async componentDidMount() {
     await this.fetchDashboardData();
+    
+    // Subscribe to data update events
+    this.unsubscribeFromEvents = subscribeToDataUpdates((updateType) => {
+      console.log(`Insights received update event: ${updateType}`);
+      
+      // If year data is being viewed, make sure to refresh both overall data and year data
+      this.setState({ loading: true }, async () => {
+        await this.fetchDashboardData();
+      });
+    });
   }
+
+  componentWillUnmount() {
+    // Clean up the subscription when component unmounts
+    if (this.unsubscribeFromEvents) {
+      this.unsubscribeFromEvents();
+    }
+  }
+
 
   fetchDashboardData = async () => {
     try {
@@ -48,9 +67,19 @@ export class Insights extends Component {
 
       const data = await response.json();
       if (response.ok) {
-        const defaultYear = data.monthlyExpensesByYear[0]?._id || '';
-        this.setState({ data, selectedYear: defaultYear }, () => {
-          this.fetchYearData(defaultYear);
+        // If we already have a selected year, use that, otherwise use the first available year
+        const yearToUse = this.state.selectedYear || data.monthlyExpensesByYear[0]?._id || '';
+        
+        this.setState({ 
+          data, 
+          selectedYear: yearToUse
+        }, () => {
+          // Only fetch year data if we have a valid year
+          if (yearToUse) {
+            this.fetchYearData(yearToUse);
+          } else {
+            this.setState({ loading: false });
+          }
         });
       } else {
         this.setState({ error: data.message || 'Failed to load data', loading: false });

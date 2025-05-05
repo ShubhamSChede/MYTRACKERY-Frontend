@@ -16,6 +16,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Button from '../../../components/Button';
 import Card from '../../../components/Card';
 import { FadeIn, SlideUp, ScaleIn, createStaggeredAnimation } from '../../../components/AnimationUtils';
+import { publishDataUpdate } from '../../../utilities/EventEmitter';
 
 // Categories array remains the same
 const categories = [
@@ -159,7 +160,9 @@ const Expenses = () => {
               updatePagination(updatedFiltered, currentPage);
               
               Alert.alert('Success', 'Expense deleted successfully');
+
               setLoading(false);
+              publishDataUpdate('expense-deleted');
             }
           }
         ]
