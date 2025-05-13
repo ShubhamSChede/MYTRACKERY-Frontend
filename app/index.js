@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import PiNavigation from './pi/PiNavigation';
 import HomeScreen from './HomeScreen';
 import Insights from './pi/PiNavigationScreens/Insights';
@@ -14,6 +14,8 @@ import Journal from './pi/PiNavigationScreens/Journal';
 import Login from './pi/Login';
 import Signup from './pi/Signup';
 import Logout from '@/components/Logout';
+import { useSmsReader } from '../hooks/useSmsReader';
+import { Link } from 'expo-router';
 
 const Stack = createStackNavigator();
 
@@ -66,3 +68,62 @@ export default function App() {
     </GestureHandlerRootView>
   );
 }
+
+export function HomeScreen() {
+    const { processSms, isLoading } = useSmsReader();
+
+    return (
+        <View style={styles.container}>
+            <Text style={styles.title}>MYTrackery</Text>
+            
+            <TouchableOpacity
+                style={[styles.button, isLoading && styles.buttonDisabled]}
+                onPress={processSms}
+                disabled={isLoading}
+            >
+                <Text style={styles.buttonText}>
+                    {isLoading ? 'Processing SMS...' : 'Process SMS'}
+                </Text>
+            </TouchableOpacity>
+
+            <Link href="/sms-transactions" asChild>
+                <TouchableOpacity style={styles.button}>
+                    <Text style={styles.buttonText}>View Pending Transactions</Text>
+                </TouchableOpacity>
+            </Link>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+        backgroundColor: '#f5f5f5',
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        marginBottom: 30,
+        color: '#333',
+    },
+    button: {
+        backgroundColor: '#007AFF',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 8,
+        marginVertical: 10,
+        width: '100%',
+        alignItems: 'center',
+    },
+    buttonDisabled: {
+        backgroundColor: '#ccc',
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+});
